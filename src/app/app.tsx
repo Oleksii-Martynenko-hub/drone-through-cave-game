@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
+
+import ErrorBoundary from './error-boundary';
+import Game from 'src/components/game';
 
 const StyledApp = styled.div`
   min-height: 100dvh;
@@ -19,43 +21,13 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 export function App() {
-  const [playerId, setPlayerId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchPlayerId = async () => {
-      const headers = new Headers();
-      headers.append('Content-Type', 'application/json');
-
-      const body = JSON.stringify({
-        name: 'player1',
-        complexity: 1,
-      });
-
-      const requestOptions = {
-        method: 'POST',
-        headers,
-        body,
-      };
-
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/init`,
-        requestOptions
-      )
-        .then((response) => response.json())
-        .catch((error) => console.log('error', error));
-
-      setPlayerId(response.id);
-      console.log('🚀 ~ fetchPlayerId ~ response.id:', response.id);
-    };
-
-    if (playerId === null) fetchPlayerId();
-  }, []);
-
   return (
     <StyledApp>
       <GlobalStyle />
 
-      <h1>Hello {playerId || '...'}</h1>
+      <ErrorBoundary fallback={<p>Something went wrong</p>}>
+        <Game />
+      </ErrorBoundary>
     </StyledApp>
   );
 }
