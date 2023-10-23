@@ -12,6 +12,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   body {
+    background: rgb(100, 100, 100);
     margin: 0;
   }
 `;
