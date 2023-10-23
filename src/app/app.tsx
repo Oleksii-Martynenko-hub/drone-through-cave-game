@@ -1,15 +1,25 @@
-import styled from 'styled-components';
-
-import NxWelcome from './nx-welcome';
+import styled, { createGlobalStyle } from 'styled-components';
 
 const StyledApp = styled.div`
-  // Your style here
+  min-height: 100dvh;
+  min-height: 100svh;
+  min-height: 100vh;
+`;
+
+const GlobalStyle = createGlobalStyle`
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+  }
 `;
 
 export function App() {
   return (
     <StyledApp>
-      <NxWelcome title="drone-through-cave-game" />
+      <GlobalStyle />
     </StyledApp>
   );
 }
