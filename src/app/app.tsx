@@ -17,6 +17,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   body {
+    font-family: 'Courier New', Courier, monospace;
     background: rgb(100, 100, 100);
   }
 `;

@@ -12,6 +12,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const StyledButton = styled.button<ButtonProps>`
   font-size: 18px;
   line-height: 24px;
+  letter-spacing: 1.6px;
   font-weight: 600;
   text-transform: uppercase;
 
