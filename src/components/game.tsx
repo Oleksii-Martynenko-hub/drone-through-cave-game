@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import Scoreboard from './scoreboard';
 import StartDialog from './start-dialog';
+import Speedometer from './speedometer';
 
 const Game = (props: any) => {
   const [playerId, setPlayerId] = useState<string | null>(null);
@@ -51,6 +52,8 @@ const Game = (props: any) => {
             { id: 6, name: 'Lisa', difficulty: 6, score: 60 },
           ]}
         />
+
+        <Speedometer speedY={78} speedX={-30} />
       </StartDialog>
     </>
   );
