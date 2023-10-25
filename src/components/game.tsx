@@ -3,9 +3,22 @@ import { useEffect, useState } from 'react';
 import Scoreboard from './scoreboard';
 import StartDialog from './start-dialog';
 import Speedometer from './speedometer';
+import GameField from './game-field';
 
 const Game = (props: any) => {
   const [playerId, setPlayerId] = useState<string | null>(null);
+  const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([
+    [-71, 71],
+    [-71, 71],
+    [-71, 71],
+    [-70, 72],
+    [-69, 72],
+    [-69, 73],
+    [-68, 74],
+    [-67, 75],
+    [-65, 76],
+    [-64, 77],
+  ]);
 
   useEffect(() => {
     const fetchPlayerId = async () => {
@@ -39,9 +52,7 @@ const Game = (props: any) => {
 
   return (
     <>
-      <h1>Hello {playerId || '...'}</h1>
-
-      <StartDialog>
+      {/* <StartDialog>
         <Scoreboard
           scoreboardData={[
             { id: 1, name: 'John', difficulty: 1, score: 10 },
@@ -54,7 +65,10 @@ const Game = (props: any) => {
         />
 
         <Speedometer speedY={78} speedX={-30} />
-      </StartDialog>
+      </StartDialog> */}
+
+
+      <GameField dronePosition={{ x: 0, y: 0 }} caveWallsData={caveWallsData} />
     </>
   );
 };
