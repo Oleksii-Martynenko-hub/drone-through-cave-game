@@ -6,9 +6,9 @@ import Game from 'src/components/game';
 import 'normalize.css';
 
 const StyledApp = styled.div`
-  /* min-height: 100dvh;
+  min-height: 100dvh;
   min-height: 100svh;
-  min-height: 100vh; */
+  min-height: 100vh;
 `;
 
 const GlobalStyle = createGlobalStyle`
@@ -18,7 +18,7 @@ const GlobalStyle = createGlobalStyle`
 
   body {
     font-family: 'Courier New', Courier, monospace;
-    background: rgb(100, 100, 100);
+    background: #646464;
   }
 `;
 
