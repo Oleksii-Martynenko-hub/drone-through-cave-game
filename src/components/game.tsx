@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
+
+import {
+  CaveWebSocket,
+  getTokenByPlayerId,
+  postNewPlayer,
+} from 'src/api/main-api';
 
 import Scoreboard from './scoreboard';
 import StartDialog from './start-dialog';
 import Speedometer from './speedometer';
 import GameField, { Point } from './game-field';
+
 import { useAnimationFrame } from './common/hooks/useAnimationFrame';
-import styled from 'styled-components';
 
 const StyledGame = styled.div`
   display: flex;
@@ -13,6 +20,8 @@ const StyledGame = styled.div`
 
 const Game = (props: any) => {
   const [playerId, setPlayerId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
 
   const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([]);
   const [dronePosition, setDronePosition] = useState<Point>({ x: 0, y: 0 });
@@ -25,9 +34,33 @@ const Game = (props: any) => {
   const [time, setTime] = useState(0);
   const [delta, setDelta] = useState(0);
 
+  useEffect(() => {
+    if (playerId === null) {
+      postNewPlayer({ name: 'player1' }).then((id) => setPlayerId(id));
+    }
+
+    if (token === null && playerId) {
+      getTokenByPlayerId(playerId).then((value) => setToken(value || ''));
+    }
+  }, [playerId]);
 
   useEffect(() => {
     if (!playerId || !token) return;
+
+    const ws = new CaveWebSocket(playerId, token);
+
+    ws.connect();
+    ws.open(() => setIsWebSocketConnected(true));
+
+    ws.getCaveWallsData((wallPosition) => {
+      setCaveWallsData((prev) => [...prev, wallPosition]);
+    });
+
+    return () => {
+      if (ws.IsConnected) {
+        ws.Socket.close();
+      }
+    };
   }, [playerId, token]);
 
   const { run, stop, isRunning } = useAnimationFrame((time, delta) => {
@@ -47,6 +80,16 @@ const Game = (props: any) => {
     setDelta(delta);
   });
 
+  useEffect(() => {
+    if (!isWebSocketConnected) return;
+
+    run();
+
+    return () => {
+      stop();
+    };
+  }, [isWebSocketConnected]);
+
   return (
     <StyledGame>
       {/* <StartDialog>
@@ -64,10 +107,13 @@ const Game = (props: any) => {
         <Speedometer speedY={78} speedX={-30} />
       </StartDialog> */}
       <Speedometer speedY={droneSpeed.y} speedX={droneSpeed.x} />
+
+      {isWebSocketConnected && (
         <GameField
           dronePosition={dronePosition}
           caveWallsData={caveWallsData}
         />
+      )}
     </StyledGame>
   );
 };
