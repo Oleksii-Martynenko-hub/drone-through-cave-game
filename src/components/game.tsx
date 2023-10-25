@@ -1,57 +1,54 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Scoreboard from './scoreboard';
 import StartDialog from './start-dialog';
 import Speedometer from './speedometer';
-import GameField from './game-field';
+import GameField, { Point } from './game-field';
+import { useAnimationFrame } from './common/hooks/useAnimationFrame';
+import styled from 'styled-components';
+
+const StyledGame = styled.div`
+  display: flex;
+`;
 
 const Game = (props: any) => {
   const [playerId, setPlayerId] = useState<string | null>(null);
-  const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([
-    [-71, 71],
-    [-71, 71],
-    [-71, 71],
-    [-70, 72],
-    [-69, 72],
-    [-69, 73],
-    [-68, 74],
-    [-67, 75],
-    [-65, 76],
-    [-64, 77],
-  ]);
+
+  const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([]);
+  const [dronePosition, setDronePosition] = useState<Point>({ x: 0, y: 0 });
+  const [droneSpeed, setDroneSpeed] = useState<Point>({ x: 0, y: 0 });
+  const droneSpeedRef = useRef<Point>({ x: 0, y: 0 });
+
+  droneSpeedRef.current = droneSpeed;
+
+
+  const [time, setTime] = useState(0);
+  const [delta, setDelta] = useState(0);
+
 
   useEffect(() => {
-    const fetchPlayerId = async () => {
-      const headers = new Headers();
-      headers.append('Content-Type', 'application/json');
+    if (!playerId || !token) return;
+  }, [playerId, token]);
 
-      const body = JSON.stringify({
-        name: 'player1',
-        complexity: 1,
-      });
+  const { run, stop, isRunning } = useAnimationFrame((time, delta) => {
+    const { x, y } = droneSpeedRef.current;
 
-      const requestOptions = {
-        method: 'POST',
-        headers,
-        body,
-      };
+    if (x || y) {
+      const newPositionY = (y * delta) / 1000;
+      const newPositionX = (x * delta) / 1000;
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/init`,
-        requestOptions
-      )
-        .then((response) => response.json())
-        .catch((error) => console.log('error', error));
+      setDronePosition((prev) => ({
+        x: prev.x + newPositionX,
+        y: prev.y + newPositionY,
+      }));
+    }
 
-      setPlayerId(response.id);
-      console.log('🚀 ~ fetchPlayerId ~ response.id:', response.id);
-    };
-
-    // if (playerId === null) fetchPlayerId();
-  }, []);
+    setTime(time);
+    setDelta(delta);
+  });
 
   return (
-    <>
+    <StyledGame>
       {/* <StartDialog>
         <Scoreboard
           scoreboardData={[
@@ -66,10 +63,12 @@ const Game = (props: any) => {
 
         <Speedometer speedY={78} speedX={-30} />
       </StartDialog> */}
-
-
-      <GameField dronePosition={{ x: 0, y: 0 }} caveWallsData={caveWallsData} />
-    </>
+      <Speedometer speedY={droneSpeed.y} speedX={droneSpeed.x} />
+        <GameField
+          dronePosition={dronePosition}
+          caveWallsData={caveWallsData}
+        />
+    </StyledGame>
   );
 };
 
