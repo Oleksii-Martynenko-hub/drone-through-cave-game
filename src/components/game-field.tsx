@@ -1,5 +1,7 @@
 import { DRONE_SIDE_SIZE, GAME_FIELD_WIDTH, WALL_HEIGHT } from 'src/constants';
 
+import { useWindowSize } from './common/hooks/useWindowSize';
+
 export type Point = {
   x: number;
   y: number;
@@ -11,8 +13,10 @@ interface Props {
 }
 
 const GameField = ({ dronePosition, caveWallsData }: Props) => {
+  const { height: windowHeight } = useWindowSize();
+
   const wallsHeight = (caveWallsData.length - 1) * WALL_HEIGHT;
-  const height = Math.min(980, wallsHeight);
+  const height = Math.min(windowHeight + 20, wallsHeight);
 
   const slicedWalls = caveWallsData.slice(
     Math.floor(dronePosition.y / WALL_HEIGHT),
@@ -32,7 +36,7 @@ const GameField = ({ dronePosition, caveWallsData }: Props) => {
   );
 
   const finishLineOffsetY = isLastWallDrawn
-    ? dronePosition.y + 980 - wallsHeight
+    ? dronePosition.y + windowHeight + 20 - wallsHeight
     : 0;
   const offsetY = dronePosition.y % WALL_HEIGHT;
 

@@ -19,6 +19,7 @@ const GlobalStyle = createGlobalStyle`
   body {
     font-family: 'Courier New', Courier, monospace;
     background: #646464;
+    overflow: hidden;
   }
 `;
 
