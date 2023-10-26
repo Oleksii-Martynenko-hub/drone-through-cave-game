@@ -31,7 +31,10 @@ const GameField = ({ dronePosition, caveWallsData }: Props) => {
     droneSemiPerimeter * Math.pow(droneSemiPerimeter - DRONE_SIDE_SIZE, 3)
   );
 
-  const offsetY = isLastWallDrawn ? dronePosition.y + 980 - wallsHeight : 0;
+  const finishLineOffsetY = isLastWallDrawn
+    ? dronePosition.y + 980 - wallsHeight
+    : 0;
+  const offsetY = dronePosition.y % WALL_HEIGHT;
 
   return (
     <svg
@@ -46,40 +49,38 @@ const GameField = ({ dronePosition, caveWallsData }: Props) => {
         <line
           x1={GAME_FIELD_WIDTH / 2 + lastVisibleWall[0] - 2}
           x2={GAME_FIELD_WIDTH / 2 + lastVisibleWall[1] + 2}
-          y1={height - 1 - offsetY}
-          y2={height - 1 - offsetY}
+          y1={height - 1 - finishLineOffsetY}
+          y2={height - 1 - finishLineOffsetY}
           stroke="skyblue"
           strokeWidth="2"
         />
       )}
       <polygon
         fill="#646464"
-        points={`0,${height} 0,${0} ${slicedWalls
+        points={`0,${height} 0,${0 - offsetY} ${slicedWalls
           .map(
             ([left, _], i) =>
-              `${GAME_FIELD_WIDTH / 2 + left},${i * WALL_HEIGHT}`
+              `${GAME_FIELD_WIDTH / 2 + left},${i * WALL_HEIGHT - offsetY}`
           )
-          .join(' ')} ${
-          GAME_FIELD_WIDTH / 2 + lastVisibleWall[0] - 2
-        },${height}`}
+          .join(' ')} ${GAME_FIELD_WIDTH / 2 + lastVisibleWall[0]},${height}`}
       />
       <polygon
         fill="#646464"
-        points={`${GAME_FIELD_WIDTH},${height} ${GAME_FIELD_WIDTH},${0} ${slicedWalls
+        points={`${GAME_FIELD_WIDTH},${height} ${GAME_FIELD_WIDTH},${
+          0 - offsetY
+        } ${slicedWalls
           .map(
             ([_, right], i) =>
-              `${GAME_FIELD_WIDTH / 2 + right},${i * WALL_HEIGHT}`
+              `${GAME_FIELD_WIDTH / 2 + right},${i * WALL_HEIGHT - offsetY}`
           )
-          .join(' ')} ${
-          GAME_FIELD_WIDTH / 2 + lastVisibleWall[1] + 2
-        },${height}`}
+          .join(' ')} ${GAME_FIELD_WIDTH / 2 + lastVisibleWall[1]},${height}`}
       />
       {/* TODO: temp debug element */}
       {slicedWalls.map(([_, right], i) => (
         <circle
           key={i}
           cx={GAME_FIELD_WIDTH / 2 + right}
-          cy={i * WALL_HEIGHT}
+          cy={i * WALL_HEIGHT - offsetY}
           r="1"
           stroke="red"
           fill="red"
@@ -91,7 +92,7 @@ const GameField = ({ dronePosition, caveWallsData }: Props) => {
         <text
           key={i}
           x={GAME_FIELD_WIDTH / 2 + right + 4}
-          y={i * WALL_HEIGHT + 3}
+          y={i * WALL_HEIGHT + 3 - offsetY}
           style={{ fontSize: '12px' }}
         >
           - {i + 1 + Math.floor(dronePosition.y / WALL_HEIGHT)}
