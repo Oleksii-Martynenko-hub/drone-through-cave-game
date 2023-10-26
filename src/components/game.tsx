@@ -13,10 +13,18 @@ import Speedometer from './speedometer';
 import GameField, { Point } from './game-field';
 
 import { useAnimationFrame } from './common/hooks/useAnimationFrame';
+import { useKeyHold } from './common/hooks/useKeyHold';
 
 const StyledGame = styled.div`
   display: flex;
 `;
+
+const keys = {
+  UP: 'ArrowUp',
+  DOWN: 'ArrowDown',
+  LEFT: 'ArrowLeft',
+  RIGHT: 'ArrowRight',
+} as const;
 
 const Game = (props: any) => {
   const [playerId, setPlayerId] = useState<string | null>(null);
@@ -26,10 +34,43 @@ const Game = (props: any) => {
   const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([]);
   const [dronePosition, setDronePosition] = useState<Point>({ x: 0, y: 0 });
   const [droneSpeed, setDroneSpeed] = useState<Point>({ x: 0, y: 0 });
-  const droneSpeedRef = useRef<Point>({ x: 0, y: 0 });
 
+  const droneSpeedRef = useRef<Point>({ x: 0, y: 0 });
   droneSpeedRef.current = droneSpeed;
 
+  const [isHoldKeyUp, holdKeyUpDuration] = useKeyHold(keys.UP, (duration) => {
+    setDroneSpeed((prev) => {
+      const newSpeedY = prev.y + (Math.floor((1 * duration) / 100) || 1);
+      return { ...prev, y: newSpeedY >= 100 ? 100 : newSpeedY };
+    });
+  });
+  const [isHoldKeyDown, holdKeyDownDuration] = useKeyHold(
+    keys.DOWN,
+    (duration) => {
+      setDroneSpeed((prev) => {
+        const newSpeedY = prev.y - (Math.floor((1 * duration) / 100) || 1);
+        return { ...prev, y: newSpeedY <= 0 ? 0 : newSpeedY };
+      });
+    }
+  );
+  const [isHoldKeyLeft, holdKeyLeftDuration] = useKeyHold(
+    keys.LEFT,
+    (duration) => {
+      setDroneSpeed((prev) => {
+        const newSpeedX = prev.x + (Math.floor((1 * duration) / 100) || 1);
+        return { ...prev, x: newSpeedX >= 100 ? 100 : newSpeedX };
+      });
+    }
+  );
+  const [isHoldKeyRight, holdKeyRightDuration] = useKeyHold(
+    keys.RIGHT,
+    (duration) => {
+      setDroneSpeed((prev) => {
+        const newSpeedX = prev.x - (Math.floor((1 * duration) / 100) || 1);
+        return { ...prev, x: newSpeedX <= -100 ? -100 : newSpeedX };
+      });
+    }
+  );
 
   const [time, setTime] = useState(0);
   const [delta, setDelta] = useState(0);
@@ -106,13 +147,35 @@ const Game = (props: any) => {
 
         <Speedometer speedY={78} speedX={-30} />
       </StartDialog> */}
-      <Speedometer speedY={droneSpeed.y} speedX={droneSpeed.x} />
-
+      
       {isWebSocketConnected && (
-        <GameField
-          dronePosition={dronePosition}
-          caveWallsData={caveWallsData}
-        />
+        <>
+          <Speedometer speedY={droneSpeed.y} speedX={droneSpeed.x} />
+
+          <GameField
+            dronePosition={dronePosition}
+            caveWallsData={caveWallsData}
+          />
+
+          <div>
+            <div>
+              <span>KeyUp: {isHoldKeyUp && 'hold '}</span>
+              <span> duration: {holdKeyUpDuration}</span>
+            </div>
+            <div>
+              <span>KeyLeft: {isHoldKeyLeft && 'hold '}</span>
+              <span> duration: {holdKeyLeftDuration}</span>
+            </div>
+            <div>
+              <span>KeyRight: {isHoldKeyRight && 'hold '}</span>
+              <span> duration: {holdKeyRightDuration}</span>
+            </div>
+            <div>
+              <span>KeyDown: {isHoldKeyDown && 'hold '}</span>
+              <span> duration: {holdKeyDownDuration}</span>
+            </div>
+          </div>
+        </>
       )}
     </StyledGame>
   );
