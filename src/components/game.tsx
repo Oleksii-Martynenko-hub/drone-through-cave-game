@@ -8,6 +8,7 @@ import {
   DRONE_MIN_H_SPEED,
   DRONE_MIN_V_SPEED,
   SCORE_BOARD_LOCAL_STORAGE_KEY,
+  WALL_HEIGHT,
 } from 'src/constants';
 
 import {
@@ -25,6 +26,7 @@ import NewSessionForm, { NewSessionData } from './common/new-session-form';
 import { useAnimationFrame } from './common/hooks/useAnimationFrame';
 import { useKeyHold } from './common/hooks/useKeyHold';
 import { useLocalStorage } from './common/hooks/useLocalStorage';
+import { useScoreBetter } from './common/hooks/useScore';
 
 const StyledGame = styled.div`
   display: flex;
@@ -44,6 +46,12 @@ const Game = (props: any) => {
   const [droneSpeed, setDroneSpeed] = useState<Point>({ x: 0, y: 0 });
 
   const [session, setSession] = useState<NewSessionData | null>(null);
+  const passedWall = Math.floor(dronePosition.y / WALL_HEIGHT);
+  const score = useScoreBetter(
+    caveWallsData.slice(passedWall, passedWall + 1)?.[0],
+    droneSpeed,
+    session?.difficulty || 0
+  );
 
   const [scoreBoardData, setScoreBoardData] = useLocalStorage<GameSession[]>(
     SCORE_BOARD_LOCAL_STORAGE_KEY,
@@ -182,6 +190,9 @@ const Game = (props: any) => {
           />
 
           <div>
+            <div>
+              <span>score: {score}</span>
+            </div>
             <div>
               <span>KeyUp: {isHoldKeyUp && 'hold '}</span>
               <span> duration: {holdKeyUpDuration}</span>
