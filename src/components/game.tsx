@@ -2,6 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import {
+  CONTROL_KEYS,
+  DRONE_MAX_H_SPEED,
+  DRONE_MAX_V_SPEED,
+  DRONE_MIN_H_SPEED,
+  DRONE_MIN_V_SPEED,
+} from 'src/constants';
+
+import {
   CaveWebSocket,
   getTokenByPlayerId,
   postNewPlayer,
@@ -19,12 +27,7 @@ const StyledGame = styled.div`
   display: flex;
 `;
 
-const keys = {
-  UP: 'ArrowUp',
-  DOWN: 'ArrowDown',
-  LEFT: 'ArrowLeft',
-  RIGHT: 'ArrowRight',
-} as const;
+
 
 const Game = (props: any) => {
   const [playerId, setPlayerId] = useState<string | null>(null);
@@ -38,36 +41,52 @@ const Game = (props: any) => {
   const droneSpeedRef = useRef<Point>({ x: 0, y: 0 });
   droneSpeedRef.current = droneSpeed;
 
-  const [isHoldKeyUp, holdKeyUpDuration] = useKeyHold(keys.UP, (duration) => {
-    setDroneSpeed((prev) => {
-      const newSpeedY = prev.y + (Math.floor((1 * duration) / 100) || 1);
-      return { ...prev, y: newSpeedY >= 100 ? 100 : newSpeedY };
-    });
-  });
-  const [isHoldKeyDown, holdKeyDownDuration] = useKeyHold(
-    keys.DOWN,
+
+  const [isHoldKeyUp, holdKeyUpDuration] = useKeyHold(
+    CONTROL_KEYS.UP,
     (duration) => {
       setDroneSpeed((prev) => {
-        const newSpeedY = prev.y - (Math.floor((1 * duration) / 100) || 1);
-        return { ...prev, y: newSpeedY <= 0 ? 0 : newSpeedY };
+        const newSpeedY = prev.y + (Math.floor(duration / 100) || 1);
+        return {
+          ...prev,
+          y: newSpeedY >= DRONE_MAX_V_SPEED ? DRONE_MAX_V_SPEED : newSpeedY,
+        };
+      });
+    }
+  );
+  const [isHoldKeyDown, holdKeyDownDuration] = useKeyHold(
+    CONTROL_KEYS.DOWN,
+    (duration) => {
+      setDroneSpeed((prev) => {
+        const newSpeedY = prev.y - (Math.floor(duration / 100) || 1);
+        return {
+          ...prev,
+          y: newSpeedY <= DRONE_MIN_V_SPEED ? DRONE_MIN_V_SPEED : newSpeedY,
+        };
       });
     }
   );
   const [isHoldKeyLeft, holdKeyLeftDuration] = useKeyHold(
-    keys.LEFT,
+    CONTROL_KEYS.LEFT,
     (duration) => {
       setDroneSpeed((prev) => {
-        const newSpeedX = prev.x + (Math.floor((1 * duration) / 100) || 1);
-        return { ...prev, x: newSpeedX >= 100 ? 100 : newSpeedX };
+        const newSpeedX = prev.x + (Math.floor(duration / 100) || 1);
+        return {
+          ...prev,
+          x: newSpeedX >= DRONE_MAX_H_SPEED ? DRONE_MAX_H_SPEED : newSpeedX,
+        };
       });
     }
   );
   const [isHoldKeyRight, holdKeyRightDuration] = useKeyHold(
-    keys.RIGHT,
+    CONTROL_KEYS.RIGHT,
     (duration) => {
       setDroneSpeed((prev) => {
-        const newSpeedX = prev.x - (Math.floor((1 * duration) / 100) || 1);
-        return { ...prev, x: newSpeedX <= -100 ? -100 : newSpeedX };
+        const newSpeedX = prev.x - (Math.floor(duration / 100) || 1);
+        return {
+          ...prev,
+          x: newSpeedX <= DRONE_MIN_H_SPEED ? DRONE_MIN_H_SPEED : newSpeedX,
+        };
       });
     }
   );
