@@ -7,6 +7,7 @@ import {
   DRONE_MAX_V_SPEED,
   DRONE_MIN_H_SPEED,
   DRONE_MIN_V_SPEED,
+  SCORE_BOARD_LOCAL_STORAGE_KEY,
 } from 'src/constants';
 
 import {
@@ -15,13 +16,15 @@ import {
   postNewPlayer,
 } from 'src/api/main-api';
 
-import Scoreboard from './scoreboard';
+import Scoreboard, { GameSession } from './scoreboard';
 import StartDialog from './start-dialog';
 import Speedometer from './speedometer';
 import GameField, { Point } from './game-field';
+import NewSessionForm, { NewSessionData } from './common/new-session-form';
 
 import { useAnimationFrame } from './common/hooks/useAnimationFrame';
 import { useKeyHold } from './common/hooks/useKeyHold';
+import { useLocalStorage } from './common/hooks/useLocalStorage';
 
 const StyledGame = styled.div`
   display: flex;
@@ -34,10 +37,18 @@ const Game = (props: any) => {
   const [token, setToken] = useState<string | null>(null);
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
 
+  const [isOpen, setIsOpen] = useState(true);
+
   const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([]);
   const [dronePosition, setDronePosition] = useState<Point>({ x: 0, y: 0 });
   const [droneSpeed, setDroneSpeed] = useState<Point>({ x: 0, y: 0 });
 
+  const [session, setSession] = useState<NewSessionData | null>(null);
+
+  const [scoreBoardData, setScoreBoardData] = useLocalStorage<GameSession[]>(
+    SCORE_BOARD_LOCAL_STORAGE_KEY,
+    []
+  );
   const droneSpeedRef = useRef<Point>({ x: 0, y: 0 });
   droneSpeedRef.current = droneSpeed;
 
@@ -95,10 +106,6 @@ const Game = (props: any) => {
   const [delta, setDelta] = useState(0);
 
   useEffect(() => {
-    if (playerId === null) {
-      postNewPlayer({ name: 'player1' }).then((id) => setPlayerId(id));
-    }
-
     if (token === null && playerId) {
       getTokenByPlayerId(playerId).then((value) => setToken(value || ''));
     }
@@ -123,6 +130,16 @@ const Game = (props: any) => {
     };
   }, [playerId, token]);
 
+  useEffect(() => {
+    if (!isWebSocketConnected) return;
+
+    run();
+
+    return () => {
+      stop();
+    };
+  }, [isWebSocketConnected]);
+
   const { run, stop, isRunning } = useAnimationFrame((time, delta) => {
     const { x, y } = droneSpeedRef.current;
 
@@ -139,34 +156,22 @@ const Game = (props: any) => {
     setTime(time);
     setDelta(delta);
   });
+  
 
-  useEffect(() => {
-    if (!isWebSocketConnected) return;
-
-    run();
-
-    return () => {
-      stop();
-    };
-  }, [isWebSocketConnected]);
+  const onSubmitNewSessionData = (sessionData: NewSessionData) => {
+    setSession(sessionData);
+    setIsOpen(false);
+    postNewPlayer(sessionData).then((id) => setPlayerId(id));
+  };
 
   return (
     <StyledGame>
-      {/* <StartDialog>
-        <Scoreboard
-          scoreboardData={[
-            { id: 1, name: 'John', difficulty: 1, score: 10 },
-            { id: 2, name: 'Mary', difficulty: 2, score: 20 },
-            { id: 3, name: 'Peter', difficulty: 3, score: 30 },
-            { id: 4, name: 'Jane', difficulty: 4, score: 40 },
-            { id: 5, name: 'Mark', difficulty: 5, score: 50 },
-            { id: 6, name: 'Lisa', difficulty: 6, score: 60 },
-          ]}
-        />
+      <StartDialog isOpen={isOpen}>
+        <NewSessionForm onSubmit={onSubmitNewSessionData} />
 
-        <Speedometer speedY={78} speedX={-30} />
-      </StartDialog> */}
-      
+        <Scoreboard scoreboardData={scoreBoardData} />
+      </StartDialog>
+
       {isWebSocketConnected && (
         <>
           <Speedometer speedY={droneSpeed.y} speedX={droneSpeed.x} />
