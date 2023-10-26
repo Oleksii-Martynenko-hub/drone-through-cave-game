@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 export const useKeyHold = (
   key: string,
   callback: (duration: number) => void,
-  intervalTime = 30
+  intervalTime = 50
 ) => {
   const [isKeyHolding, setIsKeyHolding] = useState(false);
   const [duration, setDuration] = useState(0);
