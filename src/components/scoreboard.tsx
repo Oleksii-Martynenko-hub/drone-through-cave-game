@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
-type GameSession = {
-  id: number;
+export type GameSession = {
+  id: string;
   name: string;
   difficulty: number;
   score: number;
@@ -53,7 +53,7 @@ const Scoreboard = ({ scoreboardData }: Props) => {
 
       <tbody>
         {scoreboardData
-          .sort((a, b) => a.score - b.score)
+          .sort((a, b) => b.score - a.score)
           .map((session) => (
             <tr key={session.id}>
               <td>{session.name}</td>
