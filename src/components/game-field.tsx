@@ -44,8 +44,8 @@ const GameField = ({ dronePosition, caveWallsData }: Props) => {
     <svg
       style={{ background: 'white' }}
       width={GAME_FIELD_WIDTH}
-      height={height}
-      viewBox={`0 0 ${GAME_FIELD_WIDTH} ${height}`}
+      height={height < 0 ? 0 : height}
+      viewBox={`0 0 ${GAME_FIELD_WIDTH} ${height < 0 ? 0 : height}`}
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
     >
