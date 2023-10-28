@@ -4,6 +4,9 @@ import { Point } from 'src/types/common';
 
 import { useWindowSize } from './common/hooks/useWindowSize';
 
+import { getTriangleHeight } from 'src/utils/get-triangle-height';
+import { findLinesSegmentIntersection } from 'src/utils/find-lines-segment-intersection';
+
 interface Props {
   dronePosition: Point;
   caveWallsData: [number, number][];
@@ -26,16 +29,71 @@ const GameField = ({ dronePosition, caveWallsData }: Props) => {
     height / WALL_HEIGHT + 1 + Math.floor(dronePosition.y / WALL_HEIGHT) >=
     caveWallsData.length;
 
-  const droneCenterX = GAME_FIELD_WIDTH / 2 + dronePosition.x;
-  const droneSemiPerimeter = (DRONE_SIDE_SIZE * 3) / 2;
-  const droneArea = Math.sqrt(
-    droneSemiPerimeter * Math.pow(droneSemiPerimeter - DRONE_SIDE_SIZE, 3)
-  );
-
   const finishLineOffsetY = isLastWallDrawn
     ? dronePosition.y + windowHeight + 20 - wallsHeight
     : 0;
   const offsetY = dronePosition.y % WALL_HEIGHT;
+
+  const halfDroneSide = DRONE_SIDE_SIZE / 2;
+
+  const droneHeight = getTriangleHeight(
+    DRONE_SIDE_SIZE,
+    DRONE_SIDE_SIZE,
+    DRONE_SIDE_SIZE
+  );
+
+  const droneSidesPoints = [
+    // left side
+    [
+      { x: dronePosition.x - halfDroneSide, y: 0 },
+      { x: dronePosition.x, y: droneHeight },
+    ],
+    // right side
+    [
+      { x: dronePosition.x, y: droneHeight },
+      { x: dronePosition.x + halfDroneSide, y: 0 },
+    ],
+    // top side
+    [
+      { x: dronePosition.x + halfDroneSide, y: 0 },
+      { x: dronePosition.x - halfDroneSide, y: 0 },
+    ],
+  ];
+
+  const wallNumber = Math.floor(dronePosition.y / WALL_HEIGHT);
+
+  const nearestWalls = caveWallsData.slice(wallNumber, wallNumber + 3);
+
+  let intersectPoint: Point | null = null;
+
+  for (let i = 0; i < 2; i++) {
+    if (!nearestWalls[i + 1]) break;
+
+    const [l1, r1] = nearestWalls[i];
+    const [l2, r2] = nearestWalls[i + 1];
+
+    const y = i * WALL_HEIGHT - offsetY;
+
+    const leftLine = [
+      { x: l1, y },
+      { x: l2, y: y + WALL_HEIGHT },
+    ];
+    const rightLine = [
+      { x: r1, y },
+      { x: r2, y: y + WALL_HEIGHT },
+    ];
+
+    for (const [a, b] of [leftLine, rightLine]) {
+      for (const [c, d] of droneSidesPoints) {
+        const point = findLinesSegmentIntersection(a, b, c, d);
+
+        if (point) {
+          intersectPoint = { ...point };
+          break;
+        }
+      }
+    }
+  }
 
   return (
     <svg
@@ -76,35 +134,24 @@ const GameField = ({ dronePosition, caveWallsData }: Props) => {
           )
           .join(' ')} ${GAME_FIELD_WIDTH / 2 + lastVisibleWall[1]},${height}`}
       />
-      {/* TODO: temp debug element */}
-      {slicedWalls.map(([_, right], i) => (
-        <circle
-          key={i}
-          cx={GAME_FIELD_WIDTH / 2 + right}
-          cy={i * WALL_HEIGHT - offsetY}
-          r="1"
-          stroke="red"
-          fill="red"
-          strokeWidth="2"
-        />
-      ))}
-      {/* TODO: temp debug element */}
-      {slicedWalls.map(([_, right], i) => (
-        <text
-          key={i}
-          x={GAME_FIELD_WIDTH / 2 + right + 4}
-          y={i * WALL_HEIGHT + 3 - offsetY}
-          style={{ fontSize: '12px' }}
-        >
-          - {i + 1 + Math.floor(dronePosition.y / WALL_HEIGHT)}
-        </text>
-      ))}
       <polygon
-        fill="green"
-        points={`${droneCenterX - DRONE_SIDE_SIZE / 2},0 ${
-          droneCenterX + DRONE_SIDE_SIZE / 2
-        },0 ${droneCenterX},${(droneArea * 2) / DRONE_SIDE_SIZE}`}
+        fill={intersectPoint ? 'red' : 'green'}
+        points={`${droneSidesPoints.map(
+          ([a]) => `${a.x + GAME_FIELD_WIDTH / 2},${a.y} `
+        )}
+        `}
       />
+
+      {intersectPoint && (
+        <circle
+          cx={intersectPoint.x + GAME_FIELD_WIDTH / 2}
+          cy={intersectPoint.y}
+          r="1"
+          stroke="lightgreen"
+          fill="yellow"
+          strokeWidth="1"
+        />
+      )}
     </svg>
   );
 };
