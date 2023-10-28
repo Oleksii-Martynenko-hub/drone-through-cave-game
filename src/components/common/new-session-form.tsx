@@ -1,12 +1,9 @@
 import { ChangeEvent, useState, FormEvent } from 'react';
 import styled from 'styled-components';
 
-import Button from './button';
+import { NewSessionData } from 'src/types/common';
 
-export type NewSessionData = {
-  name: string;
-  difficulty: number;
-};
+import Button from './button';
 
 interface Props {
   onSubmit: (newSessionData: NewSessionData) => void;

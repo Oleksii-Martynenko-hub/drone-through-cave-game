@@ -1,11 +1,8 @@
 import { DRONE_SIDE_SIZE, GAME_FIELD_WIDTH, WALL_HEIGHT } from 'src/constants';
 
-import { useWindowSize } from './common/hooks/useWindowSize';
+import { Point } from 'src/types/common';
 
-export type Point = {
-  x: number;
-  y: number;
-};
+import { useWindowSize } from './common/hooks/useWindowSize';
 
 interface Props {
   dronePosition: Point;

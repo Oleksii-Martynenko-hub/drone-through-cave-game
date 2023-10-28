@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Point } from 'src/components/game-field';
+
+import { Point } from 'src/types/common';
 
 export const useScore = (
   wallsPassed: number,

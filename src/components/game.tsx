@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
+import { GameSession, NewSessionData, Point } from 'src/types/common';
+
 import {
   CONTROL_KEYS,
   DRONE_MAX_H_SPEED,
@@ -17,16 +19,16 @@ import {
   postNewPlayer,
 } from 'src/api/main-api';
 
-import Scoreboard, { GameSession } from './scoreboard';
-import StartDialog from './start-dialog';
+import GameField from './game-field';
+import Scoreboard from './scoreboard';
 import Speedometer from './speedometer';
-import GameField, { Point } from './game-field';
-import NewSessionForm, { NewSessionData } from './common/new-session-form';
+import StartDialog from './start-dialog';
+import NewSessionForm from './common/new-session-form';
 
-import { useAnimationFrame } from './common/hooks/useAnimationFrame';
 import { useKeyHold } from './common/hooks/useKeyHold';
-import { useLocalStorage } from './common/hooks/useLocalStorage';
 import { useScoreBetter } from './common/hooks/useScore';
+import { useLocalStorage } from './common/hooks/useLocalStorage';
+import { useAnimationFrame } from './common/hooks/useAnimationFrame';
 
 const StyledGame = styled.div`
   display: flex;

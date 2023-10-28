@@ -1,11 +1,6 @@
 import styled from 'styled-components';
 
-export type GameSession = {
-  id: string;
-  name: string;
-  difficulty: number;
-  score: number;
-};
+import { GameSession } from 'src/types/common';
 
 interface Props {
   scoreboardData: GameSession[];
