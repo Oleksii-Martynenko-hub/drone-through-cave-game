@@ -8,7 +8,7 @@ export const CONTROL_KEYS = {
 export const GAME_FIELD_WIDTH = 500;
 export const WALL_HEIGHT = 10;
 
-export const DRONE_SIDE_SIZE = 16;
+export const DRONE_SIDE_SIZE = 8;
 export const DRONE_MAX_V_SPEED = 100;
 export const DRONE_MIN_V_SPEED = 0;
 export const DRONE_MAX_H_SPEED = 100;
