@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Point } from 'src/types/common';
 
+import { getDistance } from 'src/utils/get-distance';
+import { getObjectVelocity } from 'src/utils/get-object-velocity';
+
 export const useScore = (
   wallsPassed: number,
   droneVerticalSpeed: number,
@@ -28,24 +31,13 @@ export const useScoreBetter = (
   const prevWall = useRef(lastPassedWall);
   const distance = useRef(0);
 
-  function getObjectVelocity(xSpeed: number, ySpeed: number) {
-    return Math.sqrt(Math.pow(xSpeed, 2) + Math.pow(ySpeed, 2));
-  }
-
-  function calculateDistance(p1: Point, p2: Point) {
-    const xDistance = p2.x - p1.x;
-    const yDistance = p2.y - p1.y;
-
-    return getObjectVelocity(xDistance, yDistance);
-  }
-
   useEffect(() => {
     if (prevWall.current && lastPassedWall) {
-      const distancePassedLeft = calculateDistance(
+      const distancePassedLeft = getDistance(
         { x: prevWall.current?.[0] || 0, y: 0 },
         { x: lastPassedWall?.[0] || 0, y: 10 }
       );
-      const distancePassedRight = calculateDistance(
+      const distancePassedRight = getDistance(
         { x: prevWall.current?.[1] || 0, y: 0 },
         { x: lastPassedWall?.[1] || 0, y: 10 }
       );
