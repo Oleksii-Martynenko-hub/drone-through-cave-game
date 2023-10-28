@@ -11,10 +11,7 @@ type TokenResponse = {
   chunk: string;
 };
 
-export const postNewPlayer = async ({
-  name,
-  complexity = 1,
-}: NewPlayerBody) => {
+export const postNewPlayer = async ({ name, complexity }: NewPlayerBody) => {
   try {
     const headers = new Headers();
     headers.append('Content-Type', 'application/json');

@@ -198,10 +198,12 @@ const Game = (props: any) => {
     }
   }, [isDroneCrashed]);
 
-  const onSubmitNewSessionData = (sessionData: NewSessionData) => {
-    setSession(sessionData);
+  const onSubmitNewSessionData = ({ name, difficulty }: NewSessionData) => {
+    setSession({ name, difficulty });
     setIsOpen(false);
-    postNewPlayer(sessionData).then((id) => setPlayerId(id));
+    postNewPlayer({ name, complexity: difficulty }).then((id) =>
+      setPlayerId(id)
+    );
   };
 
   const onCrashed = () => setIsDroneCrashed(true);
@@ -211,7 +213,9 @@ const Game = (props: any) => {
       <StartDialog isOpen={isOpen}>
         <NewSessionForm onSubmit={onSubmitNewSessionData} />
 
-        <Scoreboard scoreboardData={scoreBoardData} />
+        {Boolean(scoreBoardData.length) && (
+          <Scoreboard scoreboardData={scoreBoardData} />
+        )}
       </StartDialog>
 
       {isWebSocketConnected && (
