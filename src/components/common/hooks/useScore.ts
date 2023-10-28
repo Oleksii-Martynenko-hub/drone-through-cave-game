@@ -48,12 +48,15 @@ export const useScoreBetter = (
 
       const droneVelocity = getObjectVelocity(droneSpeed.x, droneSpeed.y);
 
-      setScore((prev) =>
-        Math.round(
-          prev +
-            distancePassed * scoreMultiplier * (droneVelocity + complexity * 2)
-        )
-      );
+      const caveWidth = lastPassedWall[1] - lastPassedWall[0];
+      const caveWidthMultiplier = (200 - caveWidth) / 10;
+
+      const complexityMultiplier = droneVelocity + complexity * 2;
+      const calculatedAdditionalScore =
+        distancePassed * scoreMultiplier * complexityMultiplier +
+        caveWidthMultiplier;
+
+      setScore((prev) => Math.round(prev + calculatedAdditionalScore));
     }
 
     prevWall.current = lastPassedWall;
