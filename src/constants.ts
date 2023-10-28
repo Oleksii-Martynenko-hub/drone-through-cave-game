@@ -5,7 +5,8 @@ export const CONTROL_KEYS = {
   RIGHT: 'ArrowRight',
 } as const;
 
-export const GAME_FIELD_WIDTH = 500;
+export const GAME_FIELD_MAX_WIDTH = 1500;
+export const GAME_FIELD_MIN_WIDTH = 500;
 export const WALL_HEIGHT = 10;
 
 export const DRONE_SIDE_SIZE = 8;

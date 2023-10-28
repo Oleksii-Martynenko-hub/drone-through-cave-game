@@ -11,10 +11,10 @@ const StyledSpeedometer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #a1db4a;
   padding: 10px;
-  border: 1px solid white;
   border-radius: 6px;
+  opacity: 0.8;
+  margin: 50px -120px 0 0;
 `;
 
 const Speed = styled.div`

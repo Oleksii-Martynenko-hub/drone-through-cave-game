@@ -32,6 +32,7 @@ import { useAnimationFrame } from './common/hooks/useAnimationFrame';
 
 const StyledGame = styled.div`
   display: flex;
+  align-items: start;
 `;
 
 
