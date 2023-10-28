@@ -21,7 +21,7 @@ import {
 
 import GameField from './game-field';
 import Scoreboard from './scoreboard';
-import Speedometer from './speedometer';
+import Gauges from './gauges';
 import StartDialog from './start-dialog';
 import NewSessionForm from './common/new-session-form';
 
@@ -221,35 +221,13 @@ const Game = (props: any) => {
 
       {isWebSocketConnected && (
         <>
-          <Speedometer speedY={droneSpeed.y} speedX={droneSpeed.x} />
+          <Gauges score={score} speedY={droneSpeed.y} speedX={droneSpeed.x} />
 
           <GameField
             dronePosition={dronePosition}
             caveWallsData={caveWallsData}
             onCrashed={onCrashed}
           />
-
-          <div>
-            <div>
-              <span>score: {score}</span>
-            </div>
-            <div>
-              <span>KeyUp: {isHoldKeyUp && 'hold '}</span>
-              <span> duration: {holdKeyUpDuration}</span>
-            </div>
-            <div>
-              <span>KeyLeft: {isHoldKeyLeft && 'hold '}</span>
-              <span> duration: {holdKeyLeftDuration}</span>
-            </div>
-            <div>
-              <span>KeyRight: {isHoldKeyRight && 'hold '}</span>
-              <span> duration: {holdKeyRightDuration}</span>
-            </div>
-            <div>
-              <span>KeyDown: {isHoldKeyDown && 'hold '}</span>
-              <span> duration: {holdKeyDownDuration}</span>
-            </div>
-          </div>
         </>
       )}
     </StyledGame>

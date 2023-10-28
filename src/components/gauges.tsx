@@ -1,20 +1,21 @@
 import styled from 'styled-components';
 
 interface Props {
+  score: number;
   speedY: number;
   speedX: number;
   yMaxSpeed?: number;
   xMaxSpeed?: number;
 }
 
-const StyledSpeedometer = styled.div`
+const StyledGauges = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 10px;
   border-radius: 6px;
   opacity: 0.8;
-  margin: 50px -120px 0 0;
+  margin: 100px -120px 0 0;
 `;
 
 const Speed = styled.div`
@@ -25,7 +26,7 @@ const Speed = styled.div`
 
 const VerticalSpeed = styled(Speed)`
   width: 50px;
-  height: 100px;
+  height: 120px;
 
   background: linear-gradient(
     to bottom,
@@ -36,7 +37,7 @@ const VerticalSpeed = styled(Speed)`
 `;
 
 const HorizontalSpeed = styled(Speed)`
-  width: 100px;
+  width: 180px;
   height: 50px;
   margin-bottom: 10px;
   background: linear-gradient(
@@ -70,7 +71,7 @@ const SpeedText = styled.span`
 `;
 
 const SpeedTextY = styled(SpeedText)`
-  line-height: 100px;
+  line-height: 120px;
   background: inherit;
   -webkit-background-clip: text;
   background-clip: text;
@@ -78,7 +79,18 @@ const SpeedTextY = styled(SpeedText)`
   filter: invert(1) grayscale(0) contrast(9);
 `;
 
-const Speedometer = ({
+const Score = styled.span`
+  font-size: 20px;
+  font-weight: 600;
+  text-shadow: 0 0px 3px white;
+`;
+
+const ScoreValue = styled.span`
+  font-weight: 600;
+`;
+
+const Gauges = ({
+  score,
   speedX,
   speedY,
   yMaxSpeed = 100,
@@ -88,7 +100,11 @@ const Speedometer = ({
   const percentSpeedX = ((speedX / xMaxSpeed) * 100) / 2;
 
   return (
-    <StyledSpeedometer>
+    <StyledGauges>
+      <Score>
+        score: <ScoreValue>{score}</ScoreValue>
+      </Score>
+
       <HorizontalSpeed
         style={
           {
@@ -112,8 +128,8 @@ const Speedometer = ({
       >
         <SpeedTextY>{speedY}</SpeedTextY>
       </VerticalSpeed>
-    </StyledSpeedometer>
+    </StyledGauges>
   );
 };
 
-export default Speedometer;
+export default Gauges;
