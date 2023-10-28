@@ -10,9 +10,10 @@ import { findLinesSegmentIntersection } from 'src/utils/find-lines-segment-inter
 interface Props {
   dronePosition: Point;
   caveWallsData: [number, number][];
+  onCrashed: () => void;
 }
 
-const GameField = ({ dronePosition, caveWallsData }: Props) => {
+const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
   const { height: windowHeight } = useWindowSize();
 
   const wallsHeight = (caveWallsData.length - 1) * WALL_HEIGHT;
@@ -93,6 +94,10 @@ const GameField = ({ dronePosition, caveWallsData }: Props) => {
         }
       }
     }
+  }
+
+  if (intersectPoint) {
+    onCrashed();
   }
 
   return (

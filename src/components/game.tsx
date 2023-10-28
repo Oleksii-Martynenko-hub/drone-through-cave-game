@@ -55,13 +55,14 @@ const Game = (props: any) => {
     session?.difficulty || 0
   );
 
+  const [isDroneCrashed, setIsDroneCrashed] = useState(false);
+
   const [scoreBoardData, setScoreBoardData] = useLocalStorage<GameSession[]>(
     SCORE_BOARD_LOCAL_STORAGE_KEY,
     []
   );
   const droneSpeedRef = useRef<Point>({ x: 0, y: 0 });
   droneSpeedRef.current = droneSpeed;
-
 
   const [isHoldKeyUp, holdKeyUpDuration] = useKeyHold(
     CONTROL_KEYS.UP,
@@ -166,13 +167,44 @@ const Game = (props: any) => {
     setTime(time);
     setDelta(delta);
   });
-  
+
+  useEffect(() => {
+    if (!isRunning) return;
+    const intersectFinishedLine =
+      dronePosition.y >= (caveWallsData.length - 1) * WALL_HEIGHT;
+
+    if (intersectFinishedLine && caveWallsData.length) {
+      stop();
+      alert('congratulations');
+
+      if (session && playerId) {
+        setScoreBoardData((prev) => [
+          ...prev,
+          {
+            id: playerId,
+            name: session.name,
+            difficulty: session.difficulty,
+            score,
+          },
+        ]);
+      }
+    }
+  }, [dronePosition, isRunning]);
+
+  useEffect(() => {
+    if (isDroneCrashed) {
+      stop();
+      alert('the drone has been destroyed');
+    }
+  }, [isDroneCrashed]);
 
   const onSubmitNewSessionData = (sessionData: NewSessionData) => {
     setSession(sessionData);
     setIsOpen(false);
     postNewPlayer(sessionData).then((id) => setPlayerId(id));
   };
+
+  const onCrashed = () => setIsDroneCrashed(true);
 
   return (
     <StyledGame>
@@ -189,6 +221,7 @@ const Game = (props: any) => {
           <GameField
             dronePosition={dronePosition}
             caveWallsData={caveWallsData}
+            onCrashed={onCrashed}
           />
 
           <div>
