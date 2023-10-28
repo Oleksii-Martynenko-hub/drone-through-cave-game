@@ -211,13 +211,15 @@ const Game = (props: any) => {
 
   return (
     <StyledGame>
-      <StartDialog isOpen={isOpen}>
-        <NewSessionForm onSubmit={onSubmitNewSessionData} />
+      <Modal isOpen={isOpen}>
+        <StartModelContent>
+          <NewSessionForm onSubmit={onSubmitNewSessionData} />
 
-        {Boolean(scoreBoardData.length) && (
-          <Scoreboard scoreboardData={scoreBoardData} />
-        )}
-      </StartDialog>
+          {Boolean(scoreBoardData.length) && (
+            <Scoreboard scoreboardData={scoreBoardData} />
+          )}
+        </StartModelContent>
+      </Modal>
 
       {isWebSocketConnected && (
         <>

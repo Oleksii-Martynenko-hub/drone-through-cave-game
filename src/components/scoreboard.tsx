@@ -7,6 +7,7 @@ interface Props {
 }
 
 const StyledScoreBoard = styled.table`
+  width: 100%;
   border-collapse: collapse;
   text-indent: initial;
   border-spacing: 0px;
