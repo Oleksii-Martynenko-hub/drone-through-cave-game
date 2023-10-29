@@ -1,4 +1,7 @@
 import styled, { createGlobalStyle } from 'styled-components';
+import { Provider } from 'react-redux';
+
+import { store } from 'src/store/store';
 
 import ErrorBoundary from './error-boundary';
 import Game from 'src/components/game';
@@ -21,13 +24,15 @@ const GlobalStyle = createGlobalStyle`
 
 export function App() {
   return (
-    <StyledApp>
-      <GlobalStyle />
+    <Provider store={store}>
+      <StyledApp>
+        <GlobalStyle />
 
-      <ErrorBoundary fallback={<p>Something went wrong</p>}>
-        <Game />
-      </ErrorBoundary>
-    </StyledApp>
+        <ErrorBoundary fallback={<p>Something went wrong</p>}>
+          <Game />
+        </ErrorBoundary>
+      </StyledApp>
+    </Provider>
   );
 }
 
