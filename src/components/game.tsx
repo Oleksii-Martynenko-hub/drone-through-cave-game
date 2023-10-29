@@ -22,7 +22,8 @@ import {
 import GameField from './game-field';
 import Scoreboard from './scoreboard';
 import Gauges from './gauges';
-import StartDialog from './start-dialog';
+import Modal from './common/modal';
+import Button from './common/button';
 import NewSessionForm from './common/new-session-form';
 
 import { useKeyHold } from './common/hooks/useKeyHold';
@@ -35,14 +36,22 @@ const StyledGame = styled.div`
   align-items: start;
 `;
 
+const StartModelContent = styled.div`
+  background-color: #646464;
+  padding: 26px;
+  border-radius: 6px;
+`;
 
+const EndModelContent = styled(StartModelContent)`
+  color: #f3f3f3;
+`;
 
 const Game = (props: any) => {
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
 
-  const [isOpen, setIsOpen] = useState(true);
+  const [isStartModalOpen, setIsStartModalOpen] = useState(true);
 
   const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([]);
   const [dronePosition, setDronePosition] = useState<Point>({ x: 0, y: 0 });
@@ -57,6 +66,7 @@ const Game = (props: any) => {
   );
 
   const [isDroneCrashed, setIsDroneCrashed] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
 
   const [scoreBoardData, setScoreBoardData] = useLocalStorage<GameSession[]>(
     SCORE_BOARD_LOCAL_STORAGE_KEY,
@@ -176,7 +186,6 @@ const Game = (props: any) => {
 
     if (intersectFinishedLine && caveWallsData.length) {
       stop();
-      alert('congratulations');
 
       if (session && playerId) {
         setScoreBoardData((prev) => [
@@ -188,6 +197,7 @@ const Game = (props: any) => {
             score,
           },
         ]);
+        setIsFinished(true);
       }
     }
   }, [dronePosition, isRunning]);
@@ -195,13 +205,31 @@ const Game = (props: any) => {
   useEffect(() => {
     if (isDroneCrashed) {
       stop();
-      alert('the drone has been destroyed');
     }
   }, [isDroneCrashed]);
 
+  const clearState = () => {
+    setPlayerId(null);
+    setToken(null);
+    setIsWebSocketConnected(false);
+
+    setCaveWallsData([]);
+    setDronePosition({ x: 0, y: 0 });
+    setDroneSpeed({ x: 0, y: 0 });
+
+    setSession(null);
+  };
+
+  const handlePlayAgainBtnClick = () => {
+    clearState();
+    setIsDroneCrashed(false);
+    setIsFinished(false);
+    setIsStartModalOpen(true);
+  };
+
   const onSubmitNewSessionData = ({ name, difficulty }: NewSessionData) => {
     setSession({ name, difficulty });
-    setIsOpen(false);
+    setIsStartModalOpen(false);
     postNewPlayer({ name, complexity: difficulty }).then((id) =>
       setPlayerId(id)
     );
@@ -211,7 +239,7 @@ const Game = (props: any) => {
 
   return (
     <StyledGame>
-      <Modal isOpen={isOpen}>
+      <Modal isOpen={isStartModalOpen}>
         <StartModelContent>
           <NewSessionForm onSubmit={onSubmitNewSessionData} />
 
@@ -232,6 +260,23 @@ const Game = (props: any) => {
           />
         </>
       )}
+
+      <Modal isOpen={isDroneCrashed || isFinished}>
+        <StartModelContent>
+          <EndModelContent>
+            <h3>
+              {isFinished
+                ? 'Congratulations!'
+                : 'The drone has been destroyed...'}
+            </h3>
+            <p>name: {session?.name}</p>
+            <p>difficulty: {session?.difficulty}</p>
+            <p>score: {score}</p>
+
+            <Button onClick={handlePlayAgainBtnClick}>Play again</Button>
+          </EndModelContent>
+        </StartModelContent>
+      </Modal>
     </StyledGame>
   );
 };
