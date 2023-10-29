@@ -46,12 +46,10 @@ export const fetchToken = createAsyncThunk<string, string>(
       const err = error as { message: string };
 
       if (typeof err?.message === 'string') {
-        return rejectWithValue(err.message);
+        throw Error(err.message);
       }
 
-      return rejectWithValue(
-        'Error: Something went wrong when fetching token.'
-      );
+      throw Error('Error: Something went wrong when fetching token.');
     }
   }
 );

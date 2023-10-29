@@ -36,12 +36,10 @@ export const fetchPlayerId = createAsyncThunk<
       const err = error as { message: string };
 
       if (typeof err?.message === 'string') {
-        return rejectWithValue(err.message);
+        throw Error(err.message as string);
       }
 
-      return rejectWithValue(
-        'Error: Something went wrong when fetching player id.'
-      );
+      throw Error('Error: Something went wrong when fetching player id.');
     }
   }
 );
@@ -60,17 +58,17 @@ export const playerIdSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchPlayerId.pending, (state: PlayerIdState) => {
+      .addCase(fetchPlayerId.pending, (state) => {
         state.loadingStatus = 'loading';
       })
       .addCase(
         fetchPlayerId.fulfilled,
-        (state: PlayerIdState, action: PayloadAction<string>) => {
+        (state, action: PayloadAction<string>) => {
           state.playerId = action.payload;
           state.loadingStatus = 'loaded';
         }
       )
-      .addCase(fetchPlayerId.rejected, (state: PlayerIdState, action) => {
+      .addCase(fetchPlayerId.rejected, (state, action) => {
         state.loadingStatus = 'error';
         state.error = action.error.message;
       });
