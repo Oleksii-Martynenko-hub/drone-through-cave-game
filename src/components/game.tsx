@@ -19,6 +19,12 @@ import {
   postNewPlayer,
 } from 'src/api/main-api';
 
+import { useAppDispatch, useAppSelector } from 'src/store/store';
+import {
+  fetchPlayerId,
+  selectPlayerId,
+} from 'src/store/playerId/playerId.slice';
+
 import GameField from './game-field';
 import Scoreboard from './scoreboard';
 import Gauges from './gauges';
@@ -47,7 +53,11 @@ const EndModelContent = styled(StartModelContent)`
 `;
 
 const Game = (props: any) => {
-  const [playerId, setPlayerId] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+
+  const playerId = useAppSelector(selectPlayerId);
+
+  const [playerIdLocal, setPlayerId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
 
@@ -124,19 +134,19 @@ const Game = (props: any) => {
     }
   );
 
-  const [time, setTime] = useState(0);
+  const [time, setTime] = useState(0); // TODO: show general spent time in end modal
   const [delta, setDelta] = useState(0);
 
   useEffect(() => {
-    if (token === null && playerId) {
-      getTokenByPlayerId(playerId).then((value) => setToken(value || ''));
+    if (token === null && playerIdLocal) {
+      getTokenByPlayerId(playerIdLocal).then((value) => setToken(value || ''));
     }
-  }, [playerId]);
+  }, [playerIdLocal]);
 
   useEffect(() => {
-    if (!playerId || !token) return;
+    if (!playerIdLocal || !token) return;
 
-    const ws = new CaveWebSocket(playerId, token);
+    const ws = new CaveWebSocket(playerIdLocal, token);
 
     ws.connect();
     ws.open(() => setIsWebSocketConnected(true));
@@ -150,7 +160,7 @@ const Game = (props: any) => {
         ws.Socket.close();
       }
     };
-  }, [playerId, token]);
+  }, [playerIdLocal, token]);
 
   useEffect(() => {
     if (!isWebSocketConnected) return;
@@ -187,11 +197,11 @@ const Game = (props: any) => {
     if (intersectFinishedLine && caveWallsData.length) {
       stop();
 
-      if (session && playerId) {
+      if (session && playerIdLocal) {
         setScoreBoardData((prev) => [
           ...prev,
           {
-            id: playerId,
+            id: playerIdLocal,
             name: session.name,
             difficulty: session.difficulty,
             score,
@@ -233,6 +243,7 @@ const Game = (props: any) => {
     postNewPlayer({ name, complexity: difficulty }).then((id) =>
       setPlayerId(id)
     );
+    dispatch(fetchPlayerId({ name, difficulty }));
   };
 
   const onCrashed = () => setIsDroneCrashed(true);

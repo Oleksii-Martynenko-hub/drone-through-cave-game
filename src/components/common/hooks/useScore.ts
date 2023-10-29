@@ -48,6 +48,8 @@ export const useScoreBetter = (
 
       const droneVelocity = getObjectVelocity(droneSpeed.x, droneSpeed.y);
 
+      // TODO: improve by calculate smallest cave width
+      // instead width between l and r points on the same height
       const caveWidth = lastPassedWall[1] - lastPassedWall[0];
       const caveWidthMultiplier = (200 - caveWidth) / 10;
 
