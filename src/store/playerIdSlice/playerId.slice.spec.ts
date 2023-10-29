@@ -1,3 +1,4 @@
+import { WithoutNull } from 'src/types/common';
 import { GameSessionType } from '../gameSessionSlice/gameSession.slice';
 import {
   fetchPlayerId,
@@ -5,7 +6,10 @@ import {
   playerIdReducer,
 } from './playerId.slice';
 
-const session: GameSessionType = { name: 'PlayerOne', complexity: 1 };
+const session: WithoutNull<GameSessionType> = {
+  name: 'PlayerOne',
+  complexity: 1,
+};
 
 describe('userData reducer', () => {
   it('should handle initial state', () => {

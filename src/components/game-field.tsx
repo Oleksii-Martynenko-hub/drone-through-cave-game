@@ -142,7 +142,7 @@ const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
           x2={GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[1] + 2}
           y1={calcHeight - 1 - finishLineOffsetY}
           y2={calcHeight - 1 - finishLineOffsetY}
-          stroke="skyblue"
+          stroke="#4fccff"
           strokeWidth="2"
         />
       )}
@@ -171,7 +171,7 @@ const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
         },${calcHeight}`}
       />
       <polygon
-        fill={intersectPoint ? 'red' : 'green'}
+        fill={intersectPoint ? 'red' : '#32c800'}
         points={`${droneSidesPoints.map(
           ([a]) => `${a.x + GAME_FIELD_MIN_WIDTH / 2},${a.y} `
         )}

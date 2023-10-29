@@ -33,10 +33,11 @@ import {
   tokenActions,
 } from 'src/store/tokenSlice/token.slice';
 
+import Gauges from './gauges';
 import GameField from './game-field';
 import Scoreboard from './scoreboard';
-import Gauges from './gauges';
 import Modal from './common/modal';
+import Loader from './common/loader';
 import Button from './common/button';
 import NewSessionForm from './common/new-session-form';
 
@@ -48,6 +49,13 @@ import { useAnimationFrame } from './common/hooks/useAnimationFrame';
 const StyledGame = styled.div`
   display: flex;
   align-items: start;
+`;
+
+const LoaderWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 `;
 
 const StartModelContent = styled.div`

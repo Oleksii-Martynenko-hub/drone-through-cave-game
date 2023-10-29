@@ -8,7 +8,11 @@ import Game from 'src/components/game';
 
 import 'normalize.css';
 
-const StyledApp = styled.div``;
+const StyledApp = styled.div`
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+`;
 
 const GlobalStyle = createGlobalStyle`
   * {
