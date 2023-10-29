@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { WithoutNull } from 'src/types/common';
 
-import { GameSessionType } from 'src/store/gameSession/gameSession.slice';
+import { GameSessionType } from 'src/store/gameSessionSlice/gameSession.slice';
 
 import Button from './button';
 

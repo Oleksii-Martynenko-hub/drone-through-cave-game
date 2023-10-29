@@ -23,13 +23,13 @@ import { useAppDispatch, useAppSelector } from 'src/store/store';
 import {
   fetchPlayerId,
   selectPlayerId,
-} from 'src/store/playerId/playerId.slice';
+} from 'src/store/playerIdSlice/playerId.slice';
 import {
   GameSessionType,
   gameSessionActions,
   selectComplexity,
   selectName,
-} from 'src/store/gameSession/gameSession.slice';
+} from 'src/store/gameSessionSlice/gameSession.slice';
 
 import GameField from './game-field';
 import Scoreboard from './scoreboard';

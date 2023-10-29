@@ -1,4 +1,4 @@
-import { GameSessionType } from '../gameSession/gameSession.slice';
+import { GameSessionType } from '../gameSessionSlice/gameSession.slice';
 import {
   fetchPlayerId,
   initialPlayerIdState,

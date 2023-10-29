@@ -6,7 +6,7 @@ import {
 } from '@reduxjs/toolkit';
 
 import { RootState } from 'src/store/store';
-import { GameSessionType } from '../gameSession/gameSession.slice';
+import { GameSessionType } from '../gameSessionSlice/gameSession.slice';
 
 export const PLAYER_ID_REDUCER_KEY = 'playerIdReducer';
 
