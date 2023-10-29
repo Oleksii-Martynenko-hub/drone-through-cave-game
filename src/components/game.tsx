@@ -13,15 +13,12 @@ import {
   WALL_HEIGHT,
 } from 'src/constants';
 
-import {
-  CaveWebSocket,
-  getTokenByPlayerId,
-  postNewPlayer,
-} from 'src/api/main-api';
+import { CaveWebSocket } from 'src/api/main-api';
 
 import { useAppDispatch, useAppSelector } from 'src/store/store';
 import {
   fetchPlayerId,
+  playerIdActions,
   selectPlayerId,
 } from 'src/store/playerIdSlice/playerId.slice';
 import {
@@ -30,6 +27,11 @@ import {
   selectComplexity,
   selectName,
 } from 'src/store/gameSessionSlice/gameSession.slice';
+import {
+  fetchToken,
+  selectToken,
+  tokenActions,
+} from 'src/store/tokenSlice/token.slice';
 
 import GameField from './game-field';
 import Scoreboard from './scoreboard';
@@ -64,9 +66,8 @@ const Game = (props: any) => {
   const playerId = useAppSelector(selectPlayerId);
   const playerName = useAppSelector(selectName);
   const gameComplexity = useAppSelector(selectComplexity);
+  const token = useAppSelector(selectToken);
 
-  const [playerIdLocal, setPlayerId] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
 
   const [isStartModalOpen, setIsStartModalOpen] = useState(true);
@@ -147,15 +148,15 @@ const Game = (props: any) => {
   const [delta, setDelta] = useState(0);
 
   useEffect(() => {
-    if (token === null && playerIdLocal) {
-      getTokenByPlayerId(playerIdLocal).then((value) => setToken(value || ''));
+    if (token === null && playerId) {
+      dispatch(fetchToken(playerId));
     }
-  }, [playerIdLocal]);
+  }, [playerId]);
 
   useEffect(() => {
-    if (!playerIdLocal || !token) return;
+    if (!playerId || !token) return;
 
-    const ws = new CaveWebSocket(playerIdLocal, token);
+    const ws = new CaveWebSocket(playerId, token);
 
     ws.connect();
     ws.open(() => setIsWebSocketConnected(true));
@@ -169,9 +170,11 @@ const Game = (props: any) => {
         ws.Socket.close();
       }
     };
-  }, [playerIdLocal, token]);
+  }, [playerId, token]);
 
   useEffect(() => {
+    // TODO: do not run till enough amount of walls will be got
+    // show loader till that
     if (!isWebSocketConnected) return;
 
     run();
@@ -206,11 +209,11 @@ const Game = (props: any) => {
     if (intersectFinishedLine && caveWallsData.length) {
       stop();
 
-      if (playerName && gameComplexity && playerIdLocal) {
+      if (playerName && gameComplexity && playerId) {
         setScoreBoardData((prev) => [
           ...prev,
           {
-            id: playerIdLocal,
+            id: playerId,
             name: playerName,
             difficulty: gameComplexity,
             score,
@@ -228,8 +231,8 @@ const Game = (props: any) => {
   }, [isDroneCrashed]);
 
   const clearState = () => {
-    setPlayerId(null);
-    setToken(null);
+    dispatch(playerIdActions.clear());
+    dispatch(tokenActions.clear());
     setIsWebSocketConnected(false);
 
     setCaveWallsData([]);
@@ -245,10 +248,10 @@ const Game = (props: any) => {
   };
 
   const onSubmitNewSessionData = (session: WithoutNull<GameSessionType>) => {
-    setIsStartModalOpen(false);
-    postNewPlayer(session).then((id) => setPlayerId(id));
     dispatch(gameSessionActions.setSession(session));
     dispatch(fetchPlayerId(session));
+
+    setIsStartModalOpen(false);
   };
 
   const onCrashed = () => setIsDroneCrashed(true);

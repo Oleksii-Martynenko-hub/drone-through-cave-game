@@ -11,48 +11,36 @@ type TokenResponse = {
   chunk: string;
 };
 
-export const postNewPlayer = async ({ name, complexity }: NewPlayerBody) => {
-  try {
-    const headers = new Headers();
-    headers.append('Content-Type', 'application/json');
+export const postNewPlayer = async ({
+  name,
+  complexity,
+}: NewPlayerBody): Promise<string> => {
+  const headers = new Headers();
+  headers.append('Content-Type', 'application/json');
 
-    const body = JSON.stringify({ name, complexity });
+  const body = JSON.stringify({ name, complexity });
 
-    const requestOptions = { method: 'POST', headers, body };
+  const requestOptions = { method: 'POST', headers, body };
 
-    const response = await fetch(`${baseUrl}/init`, requestOptions).then(
-      (response) => response.json()
-    );
+  const response = await fetch(`${baseUrl}/init`, requestOptions).then(
+    (response) => response.json()
+  );
 
-    return response.id;
-  } catch (error) {
-    console.log('postNewPlayer error: ', error);
-  }
+  return response.id;
 };
 
-export const getTokenByPlayerId = async (playerId: string) => {
-  try {
-    const requestOptions = { method: 'GET' };
+export const getTokenByPlayerIdAndChunk = async (
+  playerId: string,
+  chunk: number
+) => {
+  const requestOptions = { method: 'GET' };
 
-    const tokenPromises = [1, 2, 3, 4].map(async (chunk) => {
-      const response = await fetch(
-        `${baseUrl}/token/${chunk}?id=${playerId}`,
-        requestOptions
-      );
-      return response.json() as Promise<TokenResponse>;
-    });
+  const response = await fetch(
+    `${baseUrl}/token/${chunk}?id=${playerId}`,
+    requestOptions
+  );
 
-    const response = await Promise.all(tokenPromises);
-
-    const completedToken = response
-      .sort((a, b) => a.no - b.no)
-      .map((i) => i.chunk)
-      .join('');
-
-    return completedToken;
-  } catch (error) {
-    console.log('getTokenByPlayerId error: ', error);
-  }
+  return response.json() as Promise<TokenResponse>;
 };
 
 export class CaveWebSocket {

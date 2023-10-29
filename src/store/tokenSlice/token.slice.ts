@@ -5,6 +5,8 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit';
 
+import { getTokenByPlayerIdAndChunk } from 'src/api/main-api';
+
 import { RootState } from 'src/store/store';
 
 export const TOKEN_REDUCER_KEY = 'tokenReducer';
@@ -23,8 +25,34 @@ export const initialTokenState: TokenState = {
 
 export const fetchToken = createAsyncThunk<string, string>(
   `${TOKEN_REDUCER_KEY}/fetchToken`,
-  async (playerId, thunkAPI) => {
-    return 'token';
+  async (playerId, { rejectWithValue }) => {
+    try {
+      const chunksNumbers = [1, 2, 3, 4];
+      const tokenPromises = chunksNumbers.map(async (chunk) => {
+        return getTokenByPlayerIdAndChunk(playerId, chunk);
+      });
+
+      const response = await Promise.all(tokenPromises);
+
+      const completedToken = response
+        .sort((a, b) => a.no - b.no)
+        .map((i) => i.chunk)
+        .join('');
+
+      return completedToken;
+    } catch (error) {
+      console.log('getTokenByPlayerId error: ', error);
+
+      const err = error as { message: string };
+
+      if (typeof err?.message === 'string') {
+        return rejectWithValue(err.message);
+      }
+
+      return rejectWithValue(
+        'Error: Something went wrong when fetching token.'
+      );
+    }
   }
 );
 

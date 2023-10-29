@@ -5,6 +5,10 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit';
 
+import { WithoutNull } from 'src/types/common';
+
+import { postNewPlayer } from 'src/api/main-api';
+
 import { RootState } from 'src/store/store';
 import { GameSessionType } from '../gameSessionSlice/gameSession.slice';
 
@@ -16,11 +20,29 @@ export interface PlayerIdState {
   error?: string | null;
 }
 
-export const fetchPlayerId = createAsyncThunk<string, GameSessionType>(
+export const fetchPlayerId = createAsyncThunk<
+  string,
+  WithoutNull<GameSessionType>
+>(
   `${PLAYER_ID_REDUCER_KEY}/fetchPlayerId`,
-  async (session, thunkAPI) => {
-    console.log('🚀 ~ session:', session); // TODO: add api instance to thunk extra
-    return 'newRandomPlayerId';
+  async (session, { rejectWithValue }) => {
+    try {
+      const playerId = await postNewPlayer(session);
+
+      return playerId;
+    } catch (error) {
+      console.log('postNewPlayer error: ', error);
+
+      const err = error as { message: string };
+
+      if (typeof err?.message === 'string') {
+        return rejectWithValue(err.message);
+      }
+
+      return rejectWithValue(
+        'Error: Something went wrong when fetching player id.'
+      );
+    }
   }
 );
 
