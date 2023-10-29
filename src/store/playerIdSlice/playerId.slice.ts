@@ -5,7 +5,7 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit';
 
-import { WithoutNull } from 'src/types/common';
+import { APIStatus, WithoutNull } from 'src/types/common';
 
 import { postNewPlayer } from 'src/api/main-api';
 
@@ -16,7 +16,7 @@ export const PLAYER_ID_REDUCER_KEY = 'playerIdReducer';
 
 export interface PlayerIdState {
   playerId: string | null;
-  loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
+  loadingStatus: APIStatus;
   error?: string | null;
 }
 
@@ -85,4 +85,9 @@ export const getPlayerIdState = (rootState: RootState): PlayerIdState =>
 export const selectPlayerId = createSelector(
   getPlayerIdState,
   ({ playerId }) => playerId
+);
+
+export const selectPlayerIdStatus = createSelector(
+  getPlayerIdState,
+  ({ loadingStatus }) => loadingStatus
 );

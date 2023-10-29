@@ -20,6 +20,7 @@ import {
   fetchPlayerId,
   playerIdActions,
   selectPlayerId,
+  selectPlayerIdStatus,
 } from 'src/store/playerIdSlice/playerId.slice';
 import {
   GameSessionType,
@@ -30,6 +31,7 @@ import {
 import {
   fetchToken,
   selectToken,
+  selectTokenStatus,
   tokenActions,
 } from 'src/store/tokenSlice/token.slice';
 
@@ -76,9 +78,14 @@ const Game = (props: any) => {
   const gameComplexity = useAppSelector(selectComplexity);
   const token = useAppSelector(selectToken);
 
+  const playerIdStatus = useAppSelector(selectPlayerIdStatus);
+  const tokenStatus = useAppSelector(selectTokenStatus);
+
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
 
   const [isStartModalOpen, setIsStartModalOpen] = useState(true);
+  const [isGameDataLoading, setIsGameDataLoading] = useState(false);
+  const [isEnoughWallsLoaded, setIsEnoughWallsLoaded] = useState(false);
 
   const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([]);
   const [dronePosition, setDronePosition] = useState<Point>({ x: 0, y: 0 });
@@ -156,6 +163,25 @@ const Game = (props: any) => {
   const [delta, setDelta] = useState(0);
 
   useEffect(() => {
+    if (!isGameDataLoading) return;
+
+    const isDataLoaded = [playerIdStatus, tokenStatus].every((status) => {
+      return status !== 'not loaded' && status !== 'loading';
+    });
+
+    if (isDataLoaded && isEnoughWallsLoaded) {
+      setIsGameDataLoading(false);
+    }
+  }, [isGameDataLoading, playerIdStatus, tokenStatus, isEnoughWallsLoaded]);
+
+  useEffect(() => {
+    // TODO: useWindowSize to count walls amount
+    if (caveWallsData.length > 100) {
+      setIsEnoughWallsLoaded(true);
+    }
+  }, [caveWallsData]);
+
+  useEffect(() => {
     if (token === null && playerId) {
       dispatch(fetchToken(playerId));
     }
@@ -181,16 +207,14 @@ const Game = (props: any) => {
   }, [playerId, token]);
 
   useEffect(() => {
-    // TODO: do not run till enough amount of walls will be got
-    // show loader till that
-    if (!isWebSocketConnected) return;
+    if (!isEnoughWallsLoaded || isGameDataLoading) return;
 
     run();
 
     return () => {
       stop();
     };
-  }, [isWebSocketConnected]);
+  }, [isEnoughWallsLoaded, isGameDataLoading]);
 
   const { run, stop, isRunning } = useAnimationFrame((time, delta) => {
     const { x, y } = droneSpeedRef.current;
@@ -259,10 +283,18 @@ const Game = (props: any) => {
     dispatch(gameSessionActions.setSession(session));
     dispatch(fetchPlayerId(session));
 
+    setIsGameDataLoading(true);
     setIsStartModalOpen(false);
   };
 
   const onCrashed = () => setIsDroneCrashed(true);
+
+  if (isGameDataLoading)
+    return (
+      <LoaderWrapper>
+        <Loader />
+      </LoaderWrapper>
+    );
 
   return (
     <StyledGame>

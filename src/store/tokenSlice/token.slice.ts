@@ -8,12 +8,13 @@ import {
 import { getTokenByPlayerIdAndChunk } from 'src/api/main-api';
 
 import { RootState } from 'src/store/store';
+import { APIStatus } from 'src/types/common';
 
 export const TOKEN_REDUCER_KEY = 'tokenReducer';
 
 export interface TokenState {
   token: string | null;
-  loadingStatus: 'not loaded' | 'loading' | 'loaded' | 'error';
+  loadingStatus: APIStatus;
   error?: string | null;
 }
 
@@ -84,3 +85,8 @@ export const getTokenState = (rootState: RootState): TokenState =>
   rootState[TOKEN_REDUCER_KEY];
 
 export const selectToken = createSelector(getTokenState, ({ token }) => token);
+
+export const selectTokenStatus = createSelector(
+  getTokenState,
+  ({ loadingStatus }) => loadingStatus
+);

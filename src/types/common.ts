@@ -13,3 +13,5 @@ export type GameSession = {
   difficulty: number;
   score: number;
 };
+
+export type APIStatus = 'not loaded' | 'loading' | 'loaded' | 'error';
