@@ -1,10 +1,11 @@
+import { GameSessionType } from '../gameSession/gameSession.slice';
 import {
   fetchPlayerId,
   initialPlayerIdState,
   playerIdReducer,
 } from './playerId.slice';
 
-const session = { name: 'PlayerOne', difficulty: 1 };
+const session: GameSessionType = { name: 'PlayerOne', complexity: 1 };
 
 describe('userData reducer', () => {
   it('should handle initial state', () => {

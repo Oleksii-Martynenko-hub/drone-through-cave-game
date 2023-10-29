@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import { GameSession, NewSessionData, Point } from 'src/types/common';
+import { GameSession, Point, WithoutNull } from 'src/types/common';
 
 import {
   CONTROL_KEYS,
@@ -24,6 +24,12 @@ import {
   fetchPlayerId,
   selectPlayerId,
 } from 'src/store/playerId/playerId.slice';
+import {
+  GameSessionType,
+  gameSessionActions,
+  selectComplexity,
+  selectName,
+} from 'src/store/gameSession/gameSession.slice';
 
 import GameField from './game-field';
 import Scoreboard from './scoreboard';
@@ -56,6 +62,8 @@ const Game = (props: any) => {
   const dispatch = useAppDispatch();
 
   const playerId = useAppSelector(selectPlayerId);
+  const playerName = useAppSelector(selectName);
+  const gameComplexity = useAppSelector(selectComplexity);
 
   const [playerIdLocal, setPlayerId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -67,12 +75,11 @@ const Game = (props: any) => {
   const [dronePosition, setDronePosition] = useState<Point>({ x: 0, y: 0 });
   const [droneSpeed, setDroneSpeed] = useState<Point>({ x: 0, y: 0 });
 
-  const [session, setSession] = useState<NewSessionData | null>(null);
   const passedWall = Math.floor(dronePosition.y / WALL_HEIGHT);
   const score = useScoreBetter(
     caveWallsData.slice(passedWall, passedWall + 1)?.[0],
     droneSpeed,
-    session?.difficulty || 0
+    gameComplexity || 0
   );
 
   const [isDroneCrashed, setIsDroneCrashed] = useState(false);
@@ -85,6 +92,8 @@ const Game = (props: any) => {
   const droneSpeedRef = useRef<Point>({ x: 0, y: 0 });
   droneSpeedRef.current = droneSpeed;
 
+  // TODO: fix multiple listeners,
+  // made hook for group of keys with callback for each key
   const [isHoldKeyUp, holdKeyUpDuration] = useKeyHold(
     CONTROL_KEYS.UP,
     (duration) => {
@@ -197,13 +206,13 @@ const Game = (props: any) => {
     if (intersectFinishedLine && caveWallsData.length) {
       stop();
 
-      if (session && playerIdLocal) {
+      if (playerName && gameComplexity && playerIdLocal) {
         setScoreBoardData((prev) => [
           ...prev,
           {
             id: playerIdLocal,
-            name: session.name,
-            difficulty: session.difficulty,
+            name: playerName,
+            difficulty: gameComplexity,
             score,
           },
         ]);
@@ -226,8 +235,6 @@ const Game = (props: any) => {
     setCaveWallsData([]);
     setDronePosition({ x: 0, y: 0 });
     setDroneSpeed({ x: 0, y: 0 });
-
-    setSession(null);
   };
 
   const handlePlayAgainBtnClick = () => {
@@ -237,13 +244,11 @@ const Game = (props: any) => {
     setIsStartModalOpen(true);
   };
 
-  const onSubmitNewSessionData = ({ name, difficulty }: NewSessionData) => {
-    setSession({ name, difficulty });
+  const onSubmitNewSessionData = (session: WithoutNull<GameSessionType>) => {
     setIsStartModalOpen(false);
-    postNewPlayer({ name, complexity: difficulty }).then((id) =>
-      setPlayerId(id)
-    );
-    dispatch(fetchPlayerId({ name, difficulty }));
+    postNewPlayer(session).then((id) => setPlayerId(id));
+    dispatch(gameSessionActions.setSession(session));
+    dispatch(fetchPlayerId(session));
   };
 
   const onCrashed = () => setIsDroneCrashed(true);
@@ -252,7 +257,10 @@ const Game = (props: any) => {
     <StyledGame>
       <Modal isOpen={isStartModalOpen}>
         <StartModelContent>
-          <NewSessionForm onSubmit={onSubmitNewSessionData} />
+          <NewSessionForm
+            initData={{ name: playerName, complexity: gameComplexity }}
+            onSubmit={onSubmitNewSessionData}
+          />
 
           {Boolean(scoreBoardData.length) && (
             <Scoreboard scoreboardData={scoreBoardData} />
@@ -280,8 +288,8 @@ const Game = (props: any) => {
                 ? 'Congratulations!'
                 : 'The drone has been destroyed...'}
             </h3>
-            <p>name: {session?.name}</p>
-            <p>difficulty: {session?.difficulty}</p>
+            <p>name: {playerName}</p>
+            <p>difficulty: {gameComplexity}</p>
             <p>score: {score}</p>
 
             <Button onClick={handlePlayAgainBtnClick}>Play again</Button>

@@ -1,12 +1,15 @@
 import { ChangeEvent, useState, FormEvent } from 'react';
 import styled from 'styled-components';
 
-import { NewSessionData } from 'src/types/common';
+import { WithoutNull } from 'src/types/common';
+
+import { GameSessionType } from 'src/store/gameSession/gameSession.slice';
 
 import Button from './button';
 
 interface Props {
-  onSubmit: (newSessionData: NewSessionData) => void;
+  initData: GameSessionType;
+  onSubmit: (newSessionData: WithoutNull<GameSessionType>) => void;
 }
 
 const Form = styled.form`
@@ -47,14 +50,14 @@ const PlayButton = styled(Button)`
   flex: 1 1 auto;
 `;
 
-function NewSessionForm({ onSubmit }: Props) {
-  const [name, setName] = useState('');
-  const [difficulty, setDifficulty] = useState(0);
+function NewSessionForm({ initData, onSubmit }: Props) {
+  const [name, setName] = useState(initData.name || '');
+  const [difficulty, setDifficulty] = useState(initData.complexity || 0);
 
   function onSubmitForm(e: FormEvent) {
     e.preventDefault();
 
-    onSubmit({ name, difficulty });
+    onSubmit({ name, complexity: difficulty });
     setName('');
     setDifficulty(0);
   }

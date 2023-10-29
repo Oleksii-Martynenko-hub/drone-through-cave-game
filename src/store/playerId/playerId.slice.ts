@@ -5,8 +5,8 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit';
 
-import { NewSessionData } from 'src/types/common';
 import { RootState } from 'src/store/store';
+import { GameSessionType } from '../gameSession/gameSession.slice';
 
 export const PLAYER_ID_REDUCER_KEY = 'playerIdReducer';
 
@@ -16,7 +16,7 @@ export interface PlayerIdState {
   error?: string | null;
 }
 
-export const fetchPlayerId = createAsyncThunk<string, NewSessionData>(
+export const fetchPlayerId = createAsyncThunk<string, GameSessionType>(
   `${PLAYER_ID_REDUCER_KEY}/fetchPlayerId`,
   async (session, thunkAPI) => {
     console.log('🚀 ~ session:', session); // TODO: add api instance to thunk extra
@@ -34,7 +34,7 @@ export const playerIdSlice = createSlice({
   name: PLAYER_ID_REDUCER_KEY,
   initialState: initialPlayerIdState,
   reducers: {
-    clearPlayerIdState: () => initialPlayerIdState,
+    clear: () => initialPlayerIdState,
   },
   extraReducers: (builder) => {
     builder
