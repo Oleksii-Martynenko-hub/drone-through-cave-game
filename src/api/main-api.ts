@@ -45,6 +45,7 @@ export const getTokenByPlayerIdAndChunk = async (
   return response.json() as Promise<TokenResponse>;
 };
 
+// TODO: move to separated file
 export class CaveWebSocket {
   protected isConnected = false;
   protected socket: WebSocket = {} as WebSocket;
