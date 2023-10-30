@@ -13,7 +13,7 @@ import {
   WALL_HEIGHT,
 } from 'src/constants';
 
-import { CaveWebSocket } from 'src/api/main-api';
+import { CaveWebSocket } from 'src/api/cave-web-socket';
 
 import { useAppDispatch, useAppSelector } from 'src/store/store';
 import {
