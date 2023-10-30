@@ -1,14 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { GameSession, Point, WithoutNull } from 'src/types/common';
+import { GameSession, WithoutNull } from 'src/types/common';
 
 import {
   CONTROL_KEYS,
-  DRONE_MAX_H_SPEED,
-  DRONE_MAX_V_SPEED,
-  DRONE_MIN_H_SPEED,
-  DRONE_MIN_V_SPEED,
   SCORE_BOARD_LOCAL_STORAGE_KEY,
   WALL_HEIGHT,
 } from 'src/constants';
@@ -36,7 +32,11 @@ import {
 } from 'src/store/tokenSlice/token.slice';
 import {
   gameLoopActions,
+  selectCaveWallsData,
+  selectDronePosition,
+  selectDroneSpeed,
   selectIsDroneCrashed,
+  selectIsFinished,
   selectLoopTime,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 
@@ -87,6 +87,10 @@ const Game = (props: any) => {
   const playerIdStatus = useAppSelector(selectPlayerIdStatus);
   const tokenStatus = useAppSelector(selectTokenStatus);
 
+  const caveWallsData = useAppSelector(selectCaveWallsData);
+  const dronePosition = useAppSelector(selectDronePosition);
+  const droneSpeed = useAppSelector(selectDroneSpeed);
+  const isFinished = useAppSelector(selectIsFinished);
   const isDroneCrashed = useAppSelector(selectIsDroneCrashed);
   const loopTime = useAppSelector(selectLoopTime);
 
@@ -97,16 +101,7 @@ const Game = (props: any) => {
   const [isStartModalOpen, setIsStartModalOpen] = useState(true);
   const [isGameDataLoading, setIsGameDataLoading] = useState(false);
 
-  // ------ to remove
-  const [isEnoughWallsLoaded, setIsEnoughWallsLoaded] = useState(false);
-  const isEnoughWallsLoadedRef = useRef(false);
-  isEnoughWallsLoadedRef.current = isEnoughWallsLoaded;
-  // ----------
-
-  const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([]);
-  const [dronePosition, setDronePosition] = useState<Point>({ x: 0, y: 0 });
-  const [droneSpeed, setDroneSpeed] = useState<Point>({ x: 0, y: 0 });
-
+  // TODO: change args to decrease renders
   const passedWall = Math.floor(dronePosition.y / WALL_HEIGHT);
   const score = useScoreBetter(
     caveWallsData.slice(passedWall, passedWall + 1)?.[0],
@@ -114,76 +109,48 @@ const Game = (props: any) => {
     gameComplexity || 0,
   );
 
-  const [isFinished, setIsFinished] = useState(false);
-
   const [scoreBoardData, setScoreBoardData] = useLocalStorage<GameSession[]>(
     SCORE_BOARD_LOCAL_STORAGE_KEY,
     [],
   );
-  const droneSpeedRef = useRef<Point>({ x: 0, y: 0 });
-  droneSpeedRef.current = droneSpeed;
 
   // TODO: fix multiple listeners,
   // made hook for group of keys with callback for each key
   const [isHoldKeyUp, holdKeyUpDuration] = useKeyHold(
     CONTROL_KEYS.UP,
     (duration) => {
-      if (!isEnoughWallsLoadedRef.current) return;
-
-      setDroneSpeed((prev) => {
-        const newSpeedY = prev.y + (Math.floor(duration / 100) || 1);
-        return {
-          ...prev,
-          y: newSpeedY >= DRONE_MAX_V_SPEED ? DRONE_MAX_V_SPEED : newSpeedY,
-        };
-      });
+      if (!isRunning) return;
+      const newSpeedY = Math.floor(duration / 100) || 1;
+      dispatch(gameLoopActions.setDroneSpeed({ y: newSpeedY }));
     },
   );
   const [isHoldKeyDown, holdKeyDownDuration] = useKeyHold(
     CONTROL_KEYS.DOWN,
     (duration) => {
-      if (!isEnoughWallsLoadedRef.current) return;
-
-      setDroneSpeed((prev) => {
-        const newSpeedY = prev.y - (Math.floor(duration / 100) || 1);
-        return {
-          ...prev,
-          y: newSpeedY <= DRONE_MIN_V_SPEED ? DRONE_MIN_V_SPEED : newSpeedY,
-        };
-      });
+      if (!isRunning) return;
+      const newSpeedY = Math.floor(duration / 100) || 1;
+      dispatch(gameLoopActions.setDroneSpeed({ y: -newSpeedY }));
     },
   );
   const [isHoldKeyLeft, holdKeyLeftDuration] = useKeyHold(
     CONTROL_KEYS.LEFT,
     (duration) => {
-      if (!isEnoughWallsLoadedRef.current) return;
-
-      setDroneSpeed((prev) => {
-        const newSpeedX = prev.x + (Math.floor(duration / 100) || 1);
-        return {
-          ...prev,
-          x: newSpeedX >= DRONE_MAX_H_SPEED ? DRONE_MAX_H_SPEED : newSpeedX,
-        };
-      });
+      if (!isRunning) return;
+      const newSpeedX = Math.floor(duration / 100) || 1;
+      dispatch(gameLoopActions.setDroneSpeed({ x: newSpeedX }));
     },
   );
   const [isHoldKeyRight, holdKeyRightDuration] = useKeyHold(
     CONTROL_KEYS.RIGHT,
     (duration) => {
-      if (!isEnoughWallsLoadedRef.current) return;
-
-      setDroneSpeed((prev) => {
-        const newSpeedX = prev.x - (Math.floor(duration / 100) || 1);
-        return {
-          ...prev,
-          x: newSpeedX <= DRONE_MIN_H_SPEED ? DRONE_MIN_H_SPEED : newSpeedX,
-        };
-      });
+      if (!isRunning) return;
+      const newSpeedX = Math.floor(duration / 100) || 1;
+      dispatch(gameLoopActions.setDroneSpeed({ x: -newSpeedX }));
     },
   );
 
   useEffect(() => {
-    if (!isGameDataLoading || !isEnoughWallsLoaded) return;
+    if (!isGameDataLoading || !caveWallsData.length) return;
 
     const isDataLoaded = [playerIdStatus, tokenStatus].every((status) => {
       return status !== 'not loaded' && status !== 'loading';
@@ -192,7 +159,7 @@ const Game = (props: any) => {
     if (isDataLoaded) {
       setIsGameDataLoading(false);
     }
-  }, [isGameDataLoading, playerIdStatus, tokenStatus, isEnoughWallsLoaded]);
+  }, [isGameDataLoading, playerIdStatus, tokenStatus, caveWallsData]);
 
   useLayoutEffect(() => {
     if (!caveWebSocket) {
@@ -215,11 +182,12 @@ const Game = (props: any) => {
 
     caveWebSocket.getCaveWallsData(
       (wallPositions) => {
-        setCaveWallsData([...wallPositions]);
-        setIsEnoughWallsLoaded(true);
+        dispatch(gameLoopActions.setCaveWallsData([...wallPositions]));
       },
       (additionalWallPositions) => {
-        setCaveWallsData([...additionalWallPositions]);
+        dispatch(
+          gameLoopActions.setCaveWallsData([...additionalWallPositions]),
+        );
       },
     );
 
@@ -230,31 +198,25 @@ const Game = (props: any) => {
     };
   }, [playerId, token, caveWebSocket]);
 
-  useEffect(() => {
-    if (!isEnoughWallsLoaded || isGameDataLoading) return;
-
-    run();
-
-    return () => {
-      stop();
-    };
-  }, [isEnoughWallsLoaded, isGameDataLoading]);
-
   const { run, stop, isRunning } = useAnimationFrame((time, delta) => {
-    const { x, y } = droneSpeedRef.current;
+    dispatch(gameLoopActions.setDronePosition(delta));
 
-    if (x || y) {
-      const newPositionY = (y * delta) / 1000;
-      const newPositionX = (x * delta) / 1000;
-
-      setDronePosition((prev) => ({
-        x: prev.x + newPositionX,
-        y: prev.y + newPositionY,
-      }));
-    }
-
-    dispatch(gameLoopActions.setLoopTime(time));
+    dispatch(gameLoopActions.setLoopTime(delta));
   });
+
+  useEffect(() => {
+    if (
+      isDroneCrashed ||
+      isFinished ||
+      !caveWallsData.length ||
+      isGameDataLoading
+    )
+      return;
+
+    if (!isRunning) {
+      run();
+    }
+  }, [caveWallsData, isGameDataLoading]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -275,7 +237,7 @@ const Game = (props: any) => {
             score,
           },
         ]);
-        setIsFinished(true);
+        dispatch(gameLoopActions.setIsFinished(true));
       }
     }
   }, [dronePosition, isRunning]);
@@ -286,21 +248,13 @@ const Game = (props: any) => {
     }
   }, [isDroneCrashed]);
 
-  const clearState = () => {
+  const handlePlayAgainBtnClick = () => {
     dispatch(playerIdActions.clear());
     dispatch(tokenActions.clear());
-    setIsEnoughWallsLoaded(false);
+    dispatch(gameLoopActions.clear());
+
     caveWebSocket?.clearData();
 
-    setCaveWallsData([]);
-    setDronePosition({ x: 0, y: 0 });
-    setDroneSpeed({ x: 0, y: 0 });
-  };
-
-  const handlePlayAgainBtnClick = () => {
-    clearState();
-    dispatch(gameLoopActions.clear());
-    setIsFinished(false);
     setIsStartModalOpen(true);
   };
 
@@ -338,7 +292,7 @@ const Game = (props: any) => {
       </Modal>
 
       {/* TODO: move to separated component, show when enough walls loaded */}
-      {isEnoughWallsLoaded && (
+      {!!caveWallsData.length && (
         <>
           <Gauges score={score} speedY={droneSpeed.y} speedX={droneSpeed.x} />
 
