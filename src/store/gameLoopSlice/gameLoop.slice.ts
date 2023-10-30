@@ -38,7 +38,7 @@ export const gameLoopSlice = createSlice({
       state.caveWallsData = action.payload;
     },
     setLoopTime: (state, action: PayloadAction<number>) => {
-      state.loopTime = action.payload;
+      state.loopTime += action.payload;
     },
     setDronePosition: (state, action: PayloadAction<number>) => {
       const { x, y } = state.droneSpeed;

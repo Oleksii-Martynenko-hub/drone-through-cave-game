@@ -6,10 +6,10 @@ export const useAnimationFrame = (callback: Callback) => {
   const [isRunning, setIsRunning] = useState(false);
 
   const requestID = useRef<number>(0);
-  const previousTime = useRef<number>(0);
+  const previousTime = useRef<number | null>(null);
 
   const loop = (time: number) => {
-    if (previousTime.current !== undefined) {
+    if (previousTime.current !== null) {
       const deltaTime = time - previousTime.current;
       callback(time, deltaTime);
     }
@@ -26,12 +26,14 @@ export const useAnimationFrame = (callback: Callback) => {
     return () => cancelAnimationFrame(requestID.current);
   }, [isRunning]);
 
-  const run = () => setIsRunning(true);
+  const run = () => {
+    setIsRunning(true);
+  };
 
   const stop = () => {
     cancelAnimationFrame(requestID.current);
     setIsRunning(false);
-    previousTime.current = 0;
+    previousTime.current = null;
   };
 
   return { run, stop, isRunning };
