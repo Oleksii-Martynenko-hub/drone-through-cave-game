@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import {
-  DRONE_SIDE_SIZE,
   GAME_FIELD_MAX_WIDTH,
   GAME_FIELD_MIN_WIDTH,
   WALL_HEIGHT,
@@ -10,8 +9,8 @@ import {
 import { Point } from 'src/types/common';
 
 import { useWindowSize } from './common/hooks/useWindowSize';
+import { useDroneSidesPoints } from './common/hooks/useDroneSidesPoints';
 
-import { getTriangleHeight } from 'src/utils/get-triangle-height';
 import { findLinesSegmentIntersection } from 'src/utils/find-lines-segment-intersection';
 
 interface Props {
@@ -20,7 +19,7 @@ interface Props {
   onCrashed: () => void;
 }
 
-const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
+  const droneSidesPoints = useDroneSidesPoints(dronePosition.x);
   const { width: windowWidth, height: windowHeight } = useWindowSize();
 
   const wallsHeight = (caveWallsData.length - 1) * WALL_HEIGHT;
@@ -48,7 +47,7 @@ const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
 
   const slicedWalls = caveWallsData.slice(
     Math.floor(dronePosition.y / WALL_HEIGHT),
-    calcHeight / WALL_HEIGHT + 1 + Math.floor(dronePosition.y / WALL_HEIGHT)
+    calcHeight / WALL_HEIGHT + 1 + Math.floor(dronePosition.y / WALL_HEIGHT),
   );
 
   const lastVisibleWall = slicedWalls.at(-1) || [0, 0];
@@ -61,32 +60,6 @@ const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
     ? dronePosition.y + windowHeight + 20 - wallsHeight
     : 0;
   const offsetY = dronePosition.y % WALL_HEIGHT;
-
-  const halfDroneSide = DRONE_SIDE_SIZE / 2;
-
-  const droneHeight = getTriangleHeight(
-    DRONE_SIDE_SIZE,
-    DRONE_SIDE_SIZE,
-    DRONE_SIDE_SIZE
-  );
-
-  const droneSidesPoints = [
-    // left side
-    [
-      { x: dronePosition.x - halfDroneSide, y: 0 },
-      { x: dronePosition.x, y: droneHeight },
-    ],
-    // right side
-    [
-      { x: dronePosition.x, y: droneHeight },
-      { x: dronePosition.x + halfDroneSide, y: 0 },
-    ],
-    // top side
-    [
-      { x: dronePosition.x + halfDroneSide, y: 0 },
-      { x: dronePosition.x - halfDroneSide, y: 0 },
-    ],
-  ];
 
   const wallNumber = Math.floor(dronePosition.y / WALL_HEIGHT);
 
