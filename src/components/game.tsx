@@ -89,6 +89,8 @@ const Game = (props: any) => {
   const [isStartModalOpen, setIsStartModalOpen] = useState(true);
   const [isGameDataLoading, setIsGameDataLoading] = useState(false);
   const [isEnoughWallsLoaded, setIsEnoughWallsLoaded] = useState(false);
+  const isEnoughWallsLoadedRef = useRef(false);
+  isEnoughWallsLoadedRef.current = isEnoughWallsLoaded;
 
   const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([]);
   const [dronePosition, setDronePosition] = useState<Point>({ x: 0, y: 0 });
@@ -116,6 +118,8 @@ const Game = (props: any) => {
   const [isHoldKeyUp, holdKeyUpDuration] = useKeyHold(
     CONTROL_KEYS.UP,
     (duration) => {
+      if (!isEnoughWallsLoadedRef.current) return;
+
       setDroneSpeed((prev) => {
         const newSpeedY = prev.y + (Math.floor(duration / 100) || 1);
         return {
@@ -128,6 +132,8 @@ const Game = (props: any) => {
   const [isHoldKeyDown, holdKeyDownDuration] = useKeyHold(
     CONTROL_KEYS.DOWN,
     (duration) => {
+      if (!isEnoughWallsLoadedRef.current) return;
+
       setDroneSpeed((prev) => {
         const newSpeedY = prev.y - (Math.floor(duration / 100) || 1);
         return {
@@ -140,6 +146,8 @@ const Game = (props: any) => {
   const [isHoldKeyLeft, holdKeyLeftDuration] = useKeyHold(
     CONTROL_KEYS.LEFT,
     (duration) => {
+      if (!isEnoughWallsLoadedRef.current) return;
+
       setDroneSpeed((prev) => {
         const newSpeedX = prev.x + (Math.floor(duration / 100) || 1);
         return {
@@ -152,6 +160,8 @@ const Game = (props: any) => {
   const [isHoldKeyRight, holdKeyRightDuration] = useKeyHold(
     CONTROL_KEYS.RIGHT,
     (duration) => {
+      if (!isEnoughWallsLoadedRef.current) return;
+
       setDroneSpeed((prev) => {
         const newSpeedX = prev.x - (Math.floor(duration / 100) || 1);
         return {
