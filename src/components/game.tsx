@@ -34,6 +34,10 @@ import {
   selectTokenStatus,
   tokenActions,
 } from 'src/store/tokenSlice/token.slice';
+import {
+  gameLoopActions,
+  selectIsDroneCrashed,
+} from 'src/store/gameLoopSlice/gameLoop.slice';
 
 import Gauges from './gauges';
 import GameField from './game-field';
@@ -81,9 +85,10 @@ const Game = (props: any) => {
 
   const playerIdStatus = useAppSelector(selectPlayerIdStatus);
   const tokenStatus = useAppSelector(selectTokenStatus);
+  const isDroneCrashed = useAppSelector(selectIsDroneCrashed);
 
   const [caveWebSocket, setCaveWebSocket] = useState<CaveWebSocket | null>(
-    null
+    null,
   );
 
   const [isStartModalOpen, setIsStartModalOpen] = useState(true);
@@ -100,15 +105,14 @@ const Game = (props: any) => {
   const score = useScoreBetter(
     caveWallsData.slice(passedWall, passedWall + 1)?.[0],
     droneSpeed,
-    gameComplexity || 0
+    gameComplexity || 0,
   );
 
-  const [isDroneCrashed, setIsDroneCrashed] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
   const [scoreBoardData, setScoreBoardData] = useLocalStorage<GameSession[]>(
     SCORE_BOARD_LOCAL_STORAGE_KEY,
-    []
+    [],
   );
   const droneSpeedRef = useRef<Point>({ x: 0, y: 0 });
   droneSpeedRef.current = droneSpeed;
@@ -127,7 +131,7 @@ const Game = (props: any) => {
           y: newSpeedY >= DRONE_MAX_V_SPEED ? DRONE_MAX_V_SPEED : newSpeedY,
         };
       });
-    }
+    },
   );
   const [isHoldKeyDown, holdKeyDownDuration] = useKeyHold(
     CONTROL_KEYS.DOWN,
@@ -141,7 +145,7 @@ const Game = (props: any) => {
           y: newSpeedY <= DRONE_MIN_V_SPEED ? DRONE_MIN_V_SPEED : newSpeedY,
         };
       });
-    }
+    },
   );
   const [isHoldKeyLeft, holdKeyLeftDuration] = useKeyHold(
     CONTROL_KEYS.LEFT,
@@ -155,7 +159,7 @@ const Game = (props: any) => {
           x: newSpeedX >= DRONE_MAX_H_SPEED ? DRONE_MAX_H_SPEED : newSpeedX,
         };
       });
-    }
+    },
   );
   const [isHoldKeyRight, holdKeyRightDuration] = useKeyHold(
     CONTROL_KEYS.RIGHT,
@@ -169,7 +173,7 @@ const Game = (props: any) => {
           x: newSpeedX <= DRONE_MIN_H_SPEED ? DRONE_MIN_H_SPEED : newSpeedX,
         };
       });
-    }
+    },
   );
 
   const [time, setTime] = useState(0); // TODO: show general spent time in end modal
@@ -213,7 +217,7 @@ const Game = (props: any) => {
       },
       (additionalWallPositions) => {
         setCaveWallsData([...additionalWallPositions]);
-      }
+      },
     );
 
     return () => {
@@ -293,11 +297,12 @@ const Game = (props: any) => {
 
   const handlePlayAgainBtnClick = () => {
     clearState();
-    setIsDroneCrashed(false);
+    dispatch(gameLoopActions.clear());
     setIsFinished(false);
     setIsStartModalOpen(true);
   };
 
+  // TODO: move to form component
   const onSubmitNewSessionData = (session: WithoutNull<GameSessionType>) => {
     dispatch(gameSessionActions.setSession(session));
     dispatch(fetchPlayerId(session));
@@ -305,8 +310,6 @@ const Game = (props: any) => {
     setIsGameDataLoading(true);
     setIsStartModalOpen(false);
   };
-
-  const onCrashed = () => setIsDroneCrashed(true);
 
   if (isGameDataLoading)
     return (
@@ -332,6 +335,7 @@ const Game = (props: any) => {
         </StartModelContent>
       </Modal>
 
+      {/* TODO: move to separated component, show when enough walls loaded */}
       {isEnoughWallsLoaded && (
         <>
           <Gauges score={score} speedY={droneSpeed.y} speedX={droneSpeed.x} />
@@ -339,7 +343,6 @@ const Game = (props: any) => {
           <GameField
             dronePosition={dronePosition}
             caveWallsData={caveWallsData}
-            onCrashed={onCrashed}
           />
         </>
       )}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   GAME_FIELD_MAX_WIDTH,
@@ -10,17 +10,30 @@ import { Point } from 'src/types/common';
 
 import { useWindowSize } from './common/hooks/useWindowSize';
 import { useDroneSidesPoints } from './common/hooks/useDroneSidesPoints';
+import { useIntersectionPoint } from './common/hooks/useIntersectionPoint';
 
-import { findLinesSegmentIntersection } from 'src/utils/find-lines-segment-intersection';
+import { useAppDispatch } from 'src/store/store';
+import { gameLoopActions } from 'src/store/gameLoopSlice/gameLoop.slice';
 
 interface Props {
   dronePosition: Point;
   caveWallsData: [number, number][];
-  onCrashed: () => void;
 }
 
-  const droneSidesPoints = useDroneSidesPoints(dronePosition.x);
+const GameField = ({ dronePosition, caveWallsData }: Props) => {
+  const dispatch = useAppDispatch();
+
   const { width: windowWidth, height: windowHeight } = useWindowSize();
+
+  const droneSidesPoints = useDroneSidesPoints(dronePosition.x);
+
+  const intersectionPoint = useIntersectionPoint(
+    droneSidesPoints,
+    caveWallsData,
+    dronePosition.y,
+  );
+
+  const offsetY = dronePosition.y % WALL_HEIGHT;
 
   const wallsHeight = (caveWallsData.length - 1) * WALL_HEIGHT;
 
@@ -59,48 +72,12 @@ interface Props {
   const finishLineOffsetY = isLastWallDrawn
     ? dronePosition.y + windowHeight + 20 - wallsHeight
     : 0;
-  const offsetY = dronePosition.y % WALL_HEIGHT;
 
-  const wallNumber = Math.floor(dronePosition.y / WALL_HEIGHT);
-
-  const nearestWalls = caveWallsData.slice(wallNumber, wallNumber + 3);
-
-  let intersectPoint: Point | null = null;
-
-  for (let i = 0; i < 2; i++) {
-    if (!nearestWalls[i + 1]) break;
-
-    const [l1, r1] = nearestWalls[i];
-    const [l2, r2] = nearestWalls[i + 1];
-
-    const y = i * WALL_HEIGHT - offsetY;
-
-    const leftLine = [
-      { x: l1, y },
-      { x: l2, y: y + WALL_HEIGHT },
-    ];
-    const rightLine = [
-      { x: r1, y },
-      { x: r2, y: y + WALL_HEIGHT },
-    ];
-
-    for (const [a, b] of [leftLine, rightLine]) {
-      for (const [c, d] of droneSidesPoints) {
-        const point = findLinesSegmentIntersection(a, b, c, d);
-
-        if (point) {
-          intersectPoint = { ...point };
-          break;
-        }
-      }
+  useEffect(() => {
+    if (intersectionPoint) {
+      dispatch(gameLoopActions.setIsDroneCrashed(true));
     }
-  }
-
-  // TODO: fix by adding slice for game state,
-  // move to useEffect and with dispatch
-  if (intersectPoint) {
-    onCrashed();
-  }
+  }, [dispatch, intersectionPoint]);
 
   return (
     <svg
@@ -128,7 +105,7 @@ interface Props {
         points={`0,${calcHeight} 0,${0 - offsetY} ${slicedWalls
           .map(
             ([left, _], i) =>
-              `${GAME_FIELD_MIN_WIDTH / 2 + left},${i * WALL_HEIGHT - offsetY}`
+              `${GAME_FIELD_MIN_WIDTH / 2 + left},${i * WALL_HEIGHT - offsetY}`,
           )
           .join(' ')} ${
           GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[0]
@@ -141,7 +118,9 @@ interface Props {
         } ${slicedWalls
           .map(
             ([_, right], i) =>
-              `${GAME_FIELD_MIN_WIDTH / 2 + right},${i * WALL_HEIGHT - offsetY}`
+              `${GAME_FIELD_MIN_WIDTH / 2 + right},${
+                i * WALL_HEIGHT - offsetY
+              }`,
           )
           .join(' ')} ${
           GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[1]
@@ -149,18 +128,18 @@ interface Props {
       />
       {/* TODO: move to separated component */}
       <polygon
-        fill={intersectPoint ? 'red' : '#32c800'}
+        fill={intersectionPoint ? 'red' : '#32c800'}
         points={`${droneSidesPoints.map(
-          ([a]) => `${a.x + GAME_FIELD_MIN_WIDTH / 2},${a.y} `
+          ([a]) => `${a.x + GAME_FIELD_MIN_WIDTH / 2},${a.y} `,
         )}
         `}
       />
 
       {/* TODO: move to separated component */}
-      {intersectPoint && (
+      {intersectionPoint && (
         <circle
-          cx={intersectPoint.x + GAME_FIELD_MIN_WIDTH / 2}
-          cy={intersectPoint.y}
+          cx={intersectionPoint.x + GAME_FIELD_MIN_WIDTH / 2}
+          cy={intersectionPoint.y}
           r="1"
           stroke="lightgreen"
           fill="yellow"
