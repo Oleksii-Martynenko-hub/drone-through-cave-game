@@ -166,13 +166,13 @@ const Game = (props: any) => {
   const [delta, setDelta] = useState(0);
 
   useEffect(() => {
-    if (!isGameDataLoading) return;
+    if (!isGameDataLoading || !isEnoughWallsLoaded) return;
 
     const isDataLoaded = [playerIdStatus, tokenStatus].every((status) => {
       return status !== 'not loaded' && status !== 'loading';
     });
 
-    if (isDataLoaded && isEnoughWallsLoaded) {
+    if (isDataLoaded) {
       setIsGameDataLoading(false);
     }
   }, [isGameDataLoading, playerIdStatus, tokenStatus, isEnoughWallsLoaded]);
@@ -321,7 +321,7 @@ const Game = (props: any) => {
         </StartModelContent>
       </Modal>
 
-      {isWebSocketConnected && (
+      {isEnoughWallsLoaded && (
         <>
           <Gauges score={score} speedY={droneSpeed.y} speedX={droneSpeed.x} />
 
