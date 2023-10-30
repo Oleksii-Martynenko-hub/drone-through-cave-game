@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import { GameSession, Point, WithoutNull } from 'src/types/common';
@@ -81,7 +81,9 @@ const Game = (props: any) => {
   const playerIdStatus = useAppSelector(selectPlayerIdStatus);
   const tokenStatus = useAppSelector(selectTokenStatus);
 
-  const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
+  const [caveWebSocket, setCaveWebSocket] = useState<CaveWebSocket | null>(
+    null
+  );
 
   const [isStartModalOpen, setIsStartModalOpen] = useState(true);
   const [isGameDataLoading, setIsGameDataLoading] = useState(false);
@@ -174,12 +176,11 @@ const Game = (props: any) => {
     }
   }, [isGameDataLoading, playerIdStatus, tokenStatus, isEnoughWallsLoaded]);
 
-  useEffect(() => {
-    // TODO: useWindowSize to count walls amount
-    if (caveWallsData.length > 100) {
-      setIsEnoughWallsLoaded(true);
+  useLayoutEffect(() => {
+    if (!caveWebSocket) {
+      setCaveWebSocket(new CaveWebSocket());
     }
-  }, [caveWallsData]);
+  }, []);
 
   useEffect(() => {
     if (token === null && playerId) {
@@ -188,23 +189,28 @@ const Game = (props: any) => {
   }, [playerId]);
 
   useEffect(() => {
-    if (!playerId || !token) return;
+    if (!playerId || !token || !caveWebSocket) return;
 
-    const ws = new CaveWebSocket(playerId, token);
+    caveWebSocket.connect();
+    caveWebSocket.open(playerId, token);
+    caveWebSocket.resetWindowHeight();
 
-    ws.connect();
-    ws.open(() => setIsWebSocketConnected(true));
-
-    ws.getCaveWallsData((wallPosition) => {
-      setCaveWallsData((prev) => [...prev, wallPosition]);
-    });
+    caveWebSocket.getCaveWallsData(
+      (wallPositions) => {
+        setCaveWallsData([...wallPositions]);
+        setIsEnoughWallsLoaded(true);
+      },
+      (additionalWallPositions) => {
+        setCaveWallsData([...additionalWallPositions]);
+      }
+    );
 
     return () => {
-      if (ws.IsConnected) {
-        ws.Socket.close();
+      if (caveWebSocket.IsConnected) {
+        caveWebSocket.Socket.close();
       }
     };
-  }, [playerId, token]);
+  }, [playerId, token, caveWebSocket]);
 
   useEffect(() => {
     if (!isEnoughWallsLoaded || isGameDataLoading) return;
@@ -235,6 +241,7 @@ const Game = (props: any) => {
 
   useEffect(() => {
     if (!isRunning) return;
+
     const intersectFinishedLine =
       dronePosition.y >= (caveWallsData.length - 1) * WALL_HEIGHT;
 
@@ -265,7 +272,7 @@ const Game = (props: any) => {
   const clearState = () => {
     dispatch(playerIdActions.clear());
     dispatch(tokenActions.clear());
-    setIsWebSocketConnected(false);
+    caveWebSocket?.clearData();
 
     setCaveWallsData([]);
     setDronePosition({ x: 0, y: 0 });
@@ -298,6 +305,7 @@ const Game = (props: any) => {
 
   return (
     <StyledGame>
+      {/* TODO: move to separated component */}
       <Modal isOpen={isStartModalOpen}>
         <StartModelContent>
           <NewSessionForm
@@ -323,6 +331,7 @@ const Game = (props: any) => {
         </>
       )}
 
+      {/* TODO: move to separated component */}
       <Modal isOpen={isDroneCrashed || isFinished}>
         <StartModelContent>
           <EndModelContent>

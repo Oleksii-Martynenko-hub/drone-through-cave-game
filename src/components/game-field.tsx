@@ -123,6 +123,8 @@ const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
     }
   }
 
+  // TODO: fix by adding slice for game state,
+  // move to useEffect and with dispatch
   if (intersectPoint) {
     onCrashed();
   }
@@ -136,6 +138,7 @@ const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
     >
+      {/* TODO: move to separated component */}
       {isLastWallDrawn && (
         <line
           x1={GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[0] - 2}
@@ -146,6 +149,7 @@ const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
           strokeWidth="2"
         />
       )}
+      {/* TODO: move to separated component */}
       <polygon
         fill="#646464"
         points={`0,${calcHeight} 0,${0 - offsetY} ${slicedWalls
@@ -170,6 +174,7 @@ const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
           GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[1]
         },${calcHeight}`}
       />
+      {/* TODO: move to separated component */}
       <polygon
         fill={intersectPoint ? 'red' : '#32c800'}
         points={`${droneSidesPoints.map(
@@ -178,6 +183,7 @@ const GameField = ({ dronePosition, caveWallsData, onCrashed }: Props) => {
         `}
       />
 
+      {/* TODO: move to separated component */}
       {intersectPoint && (
         <circle
           cx={intersectPoint.x + GAME_FIELD_MIN_WIDTH / 2}
