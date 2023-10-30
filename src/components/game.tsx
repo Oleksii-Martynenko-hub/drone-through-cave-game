@@ -245,6 +245,7 @@ const Game = (props: any) => {
   useEffect(() => {
     if (isDroneCrashed) {
       stop();
+      caveWebSocket?.Socket.close();
     }
   }, [isDroneCrashed]);
 
