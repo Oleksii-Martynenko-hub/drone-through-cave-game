@@ -37,6 +37,7 @@ import {
 import {
   gameLoopActions,
   selectIsDroneCrashed,
+  selectLoopTime,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 
 import Gauges from './gauges';
@@ -78,14 +79,16 @@ const EndModelContent = styled(StartModelContent)`
 const Game = (props: any) => {
   const dispatch = useAppDispatch();
 
-  const playerId = useAppSelector(selectPlayerId);
   const playerName = useAppSelector(selectName);
   const gameComplexity = useAppSelector(selectComplexity);
+  const playerId = useAppSelector(selectPlayerId);
   const token = useAppSelector(selectToken);
 
   const playerIdStatus = useAppSelector(selectPlayerIdStatus);
   const tokenStatus = useAppSelector(selectTokenStatus);
+
   const isDroneCrashed = useAppSelector(selectIsDroneCrashed);
+  const loopTime = useAppSelector(selectLoopTime);
 
   const [caveWebSocket, setCaveWebSocket] = useState<CaveWebSocket | null>(
     null,
@@ -93,9 +96,12 @@ const Game = (props: any) => {
 
   const [isStartModalOpen, setIsStartModalOpen] = useState(true);
   const [isGameDataLoading, setIsGameDataLoading] = useState(false);
+
+  // ------ to remove
   const [isEnoughWallsLoaded, setIsEnoughWallsLoaded] = useState(false);
   const isEnoughWallsLoadedRef = useRef(false);
   isEnoughWallsLoadedRef.current = isEnoughWallsLoaded;
+  // ----------
 
   const [caveWallsData, setCaveWallsData] = useState<[number, number][]>([]);
   const [dronePosition, setDronePosition] = useState<Point>({ x: 0, y: 0 });
@@ -176,9 +182,6 @@ const Game = (props: any) => {
     },
   );
 
-  const [time, setTime] = useState(0); // TODO: show general spent time in end modal
-  const [delta, setDelta] = useState(0);
-
   useEffect(() => {
     if (!isGameDataLoading || !isEnoughWallsLoaded) return;
 
@@ -250,8 +253,7 @@ const Game = (props: any) => {
       }));
     }
 
-    setTime(time);
-    setDelta(delta);
+    dispatch(gameLoopActions.setLoopTime(time));
   });
 
   useEffect(() => {
@@ -359,6 +361,12 @@ const Game = (props: any) => {
             <p>name: {playerName}</p>
             <p>difficulty: {gameComplexity}</p>
             <p>score: {score}</p>
+            <p>
+              loopTime:{' '}
+              {`${Math.floor(loopTime / 60000)}:${Math.floor(
+                (loopTime % 60000) / 1000,
+              )}`}
+            </p>
 
             <Button onClick={handlePlayAgainBtnClick}>Play again</Button>
           </EndModelContent>

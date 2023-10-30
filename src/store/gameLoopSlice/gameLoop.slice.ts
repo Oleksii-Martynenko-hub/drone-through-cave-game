@@ -7,6 +7,7 @@ export const GAME_LOOP_REDUCER_KEY = 'gameLoopReducer';
 
 export interface GameLoopState {
   caveWallsData: [number, number][];
+  loopTime: number;
   dronePosition: Point;
   droneSpeed: Point;
   isDroneCrashed: boolean;
@@ -15,6 +16,7 @@ export interface GameLoopState {
 
 export const initialGameLoopState: GameLoopState = {
   caveWallsData: [],
+  loopTime: 0,
   dronePosition: { x: 0, y: 0 },
   droneSpeed: { x: 0, y: 0 },
   isDroneCrashed: false,
@@ -27,6 +29,9 @@ export const gameLoopSlice = createSlice({
   reducers: {
     setCaveWallsData: (state, action: PayloadAction<[number, number][]>) => {
       state.caveWallsData = action.payload;
+    },
+    setLoopTime: (state, action: PayloadAction<number>) => {
+      state.loopTime = action.payload;
     },
     setDronePosition: (state, action: PayloadAction<Point>) => {
       state.dronePosition = action.payload;
@@ -53,7 +58,12 @@ export const getGameLoopState = (rootState: RootState): GameLoopState =>
 
 export const selectCaveWallsData = createSelector(
   getGameLoopState,
-  ({ caveWallsData }) => caveWallsData
+  ({ caveWallsData }) => caveWallsData,
+);
+
+export const selectLoopTime = createSelector(
+  getGameLoopState,
+  ({ loopTime }) => loopTime,
 );
 
 export const selectDronePosition = createSelector(
