@@ -57,6 +57,7 @@ const LoaderWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
   height: 100vh;
 `;
 
@@ -300,6 +301,7 @@ const Game = (props: any) => {
     return (
       <LoaderWrapper>
         <Loader />
+        <h3>Loading game data...</h3>
       </LoaderWrapper>
     );
 
