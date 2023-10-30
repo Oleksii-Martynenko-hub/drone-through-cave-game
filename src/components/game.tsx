@@ -273,6 +273,7 @@ const Game = (props: any) => {
   const clearState = () => {
     dispatch(playerIdActions.clear());
     dispatch(tokenActions.clear());
+    setIsEnoughWallsLoaded(false);
     caveWebSocket?.clearData();
 
     setCaveWallsData([]);
