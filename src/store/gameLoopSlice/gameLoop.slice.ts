@@ -9,6 +9,7 @@ import {
 
 import { RootState } from 'src/store/store';
 import { Point } from 'src/types/common';
+import { maxMin } from 'src/utils/max-min';
 
 export const GAME_LOOP_REDUCER_KEY = 'gameLoopReducer';
 
@@ -53,22 +54,28 @@ export const gameLoopSlice = createSlice({
       }
     },
     setDroneSpeed: (state, action: PayloadAction<Partial<Point>>) => {
-      let newSpeedY = state.droneSpeed.y;
-      let newSpeedX = state.droneSpeed.x;
+      const { x: prevX, y: prevY } = state.droneSpeed;
+      const { x: addX, y: addY } = action.payload;
 
-      const { x, y } = action.payload;
+      if (addX !== undefined) {
+        const newSpeedX = maxMin(
+          prevX + addX,
+          DRONE_MAX_H_SPEED,
+          DRONE_MIN_H_SPEED,
+        );
 
-      if (x !== undefined) {
-        newSpeedX += x;
-        if (newSpeedX >= DRONE_MAX_H_SPEED) newSpeedX = DRONE_MAX_H_SPEED;
-        if (newSpeedX <= DRONE_MIN_H_SPEED) newSpeedX = DRONE_MIN_H_SPEED;
+        state.droneSpeed = { x: newSpeedX, y: prevY };
       }
-      if (y !== undefined) {
-        newSpeedY += y;
-        if (newSpeedY >= DRONE_MAX_V_SPEED) newSpeedY = DRONE_MAX_V_SPEED;
-        if (newSpeedY <= DRONE_MIN_V_SPEED) newSpeedY = DRONE_MIN_V_SPEED;
+
+      if (addY !== undefined) {
+        const newSpeedY = maxMin(
+          prevY + addY,
+          DRONE_MAX_V_SPEED,
+          DRONE_MIN_V_SPEED,
+        );
+
+        state.droneSpeed = { y: newSpeedY, x: prevX };
       }
-      state.droneSpeed = { x: newSpeedX, y: newSpeedY };
     },
     setIsDroneCrashed: (state, action: PayloadAction<boolean>) => {
       state.isDroneCrashed = action.payload;
