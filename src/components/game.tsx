@@ -10,10 +10,6 @@ import {
   selectPlayerIdStatus,
 } from 'src/store/playerIdSlice/playerId.slice';
 import {
-  selectComplexity,
-  selectName,
-} from 'src/store/gameSessionSlice/gameSession.slice';
-import {
   fetchToken,
   selectToken,
   selectTokenStatus,
@@ -23,14 +19,10 @@ import {
   gameLoopActions,
   selectCaveWallsData,
   selectIsDroneCrashed,
-  selectIsFinished,
-  selectLoopTime,
-  selectScore,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 
-import Modal from './common/modal';
 import Loader from './common/loader';
-import Button from './common/button';
+import EndModal from './end-modal';
 import StartModal from './start-modal';
 
 const StyledGame = styled.div`
@@ -46,21 +38,9 @@ const LoaderWrapper = styled.div`
   height: 100vh;
 `;
 
-const StartModelContent = styled.div`
-  background-color: #646464;
-  padding: 26px;
-  border-radius: 6px;
-`;
-
-const EndModelContent = styled(StartModelContent)`
-  color: #f3f3f3;
-`;
-
 const Game = () => {
   const dispatch = useAppDispatch();
 
-  const playerName = useAppSelector(selectName);
-  const gameComplexity = useAppSelector(selectComplexity);
   const playerId = useAppSelector(selectPlayerId);
   const token = useAppSelector(selectToken);
 
@@ -68,10 +48,7 @@ const Game = () => {
   const tokenStatus = useAppSelector(selectTokenStatus);
 
   const caveWallsData = useAppSelector(selectCaveWallsData);
-  const isFinished = useAppSelector(selectIsFinished);
   const isDroneCrashed = useAppSelector(selectIsDroneCrashed);
-  const loopTime = useAppSelector(selectLoopTime);
-  const score = useAppSelector(selectScore);
 
   const [caveWebSocket, setCaveWebSocket] = useState<CaveWebSocket | null>(
     null,
@@ -164,27 +141,8 @@ const Game = () => {
         isOpen={isStartModalOpen}
         handleClose={handleCloseStartModal}
       />
-      {/* TODO: move to separated component */}
-      <Modal isOpen={isDroneCrashed || isFinished}>
-        <EndModelContent>
-          <h3>
-            {isFinished
-              ? 'Congratulations!'
-              : 'The drone has been destroyed...'}
-          </h3>
-          <p>name: {playerName}</p>
-          <p>difficulty: {gameComplexity}</p>
-          <p>score: {score}</p>
-          <p>
-            time:{' '}
-            {`${Math.floor(loopTime / 60000)}:${Math.floor(
-              (loopTime % 60000) / 1000,
-            )}`}
-          </p>
 
-          <Button onClick={handlePlayAgainBtnClick}>Play again</Button>
-        </EndModelContent>
-      </Modal>
+      <EndModal onPlayAgainClick={handlePlayAgainBtnClick} />
     </StyledGame>
   );
 };
