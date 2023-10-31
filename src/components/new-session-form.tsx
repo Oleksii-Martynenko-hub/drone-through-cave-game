@@ -5,7 +5,7 @@ import { WithoutNull } from 'src/types/common';
 
 import { GameSessionType } from 'src/store/gameSessionSlice/gameSession.slice';
 
-import Button from './button';
+import Button from './common/button';
 
 interface Props {
   initData: GameSessionType;

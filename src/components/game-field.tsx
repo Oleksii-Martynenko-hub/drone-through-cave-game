@@ -119,6 +119,15 @@ const GameField = () => {
     }
   }, [dronePosition, isRunning]);
 
+  useEffect(() => {
+    if (intersectionPoint) {
+      stop();
+
+      dispatch(gameLoopActions.setScore(score));
+      dispatch(gameLoopActions.setIsDroneCrashed(true));
+    }
+  }, [dispatch, intersectionPoint]);
+
   const offsetY = dronePosition.y % WALL_HEIGHT;
 
   const wallsHeight = (caveWallsData.length - 1) * WALL_HEIGHT;
@@ -158,15 +167,6 @@ const GameField = () => {
   const finishLineOffsetY = isLastWallDrawn
     ? dronePosition.y + windowHeight + 20 - wallsHeight
     : 0;
-
-  useEffect(() => {
-    if (intersectionPoint) {
-      stop();
-
-      dispatch(gameLoopActions.setScore(score));
-      dispatch(gameLoopActions.setIsDroneCrashed(true));
-    }
-  }, [dispatch, intersectionPoint]);
 
   return (
     <StyledGameField>

@@ -1,22 +1,15 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { GameSession, WithoutNull } from 'src/types/common';
-
-import { SCORE_BOARD_LOCAL_STORAGE_KEY } from 'src/constants';
-
 import { CaveWebSocket } from 'src/api/cave-web-socket';
 
 import { useAppDispatch, useAppSelector } from 'src/store/store';
 import {
-  fetchPlayerId,
   playerIdActions,
   selectPlayerId,
   selectPlayerIdStatus,
 } from 'src/store/playerIdSlice/playerId.slice';
 import {
-  GameSessionType,
-  gameSessionActions,
   selectComplexity,
   selectName,
 } from 'src/store/gameSessionSlice/gameSession.slice';
@@ -35,13 +28,10 @@ import {
   selectScore,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 
-import { useLocalStorage } from './common/hooks/useLocalStorage';
-
 import Modal from './common/modal';
 import Loader from './common/loader';
 import Button from './common/button';
-import NewSessionForm from './common/new-session-form';
-import Scoreboard from './scoreboard';
+import StartModal from './start-modal';
 
 const StyledGame = styled.div`
   display: flex;
@@ -66,7 +56,7 @@ const EndModelContent = styled(StartModelContent)`
   color: #f3f3f3;
 `;
 
-const Game = (props: any) => {
+const Game = () => {
   const dispatch = useAppDispatch();
 
   const playerName = useAppSelector(selectName);
@@ -87,12 +77,8 @@ const Game = (props: any) => {
     null,
   );
 
-  const [isStartModalOpen, setIsStartModalOpen] = useState(true);
   const [isGameDataLoading, setIsGameDataLoading] = useState(false);
-  const [scoreBoardData, setScoreBoardData] = useLocalStorage<GameSession[]>(
-    SCORE_BOARD_LOCAL_STORAGE_KEY,
-    [],
-  );
+  const [isStartModalOpen, setIsStartModalOpen] = useState(true);
 
   useEffect(() => {
     if (!isGameDataLoading || !caveWallsData.length) return;
@@ -144,22 +130,6 @@ const Game = (props: any) => {
   }, [playerId, token, caveWebSocket]);
 
   useEffect(() => {
-    if (!isFinished) return;
-
-    if (playerName && gameComplexity && playerId) {
-      setScoreBoardData((prev) => [
-        ...prev,
-        {
-          id: playerId,
-          name: playerName,
-          difficulty: gameComplexity,
-          score,
-        },
-      ]);
-    }
-  }, [isFinished]);
-
-  useEffect(() => {
     if (isDroneCrashed) {
       caveWebSocket?.Socket.close();
     }
@@ -175,11 +145,7 @@ const Game = (props: any) => {
     setIsStartModalOpen(true);
   };
 
-  // TODO: move to form component
-  const onSubmitNewSessionData = (session: WithoutNull<GameSessionType>) => {
-    dispatch(gameSessionActions.setSession(session));
-    dispatch(fetchPlayerId(session));
-
+  const handleCloseStartModal = () => {
     setIsGameDataLoading(true);
     setIsStartModalOpen(false);
   };
@@ -194,42 +160,30 @@ const Game = (props: any) => {
 
   return (
     <StyledGame>
-      {/* TODO: move to separated component */}
-      <Modal isOpen={isStartModalOpen}>
-        <StartModelContent>
-          <NewSessionForm
-            initData={{ name: playerName, complexity: gameComplexity }}
-            onSubmit={onSubmitNewSessionData}
-          />
-
-          {Boolean(scoreBoardData.length) && (
-            <Scoreboard scoreboardData={scoreBoardData} />
-          )}
-        </StartModelContent>
-      </Modal>
-
+      <StartModal
+        isOpen={isStartModalOpen}
+        handleClose={handleCloseStartModal}
+      />
       {/* TODO: move to separated component */}
       <Modal isOpen={isDroneCrashed || isFinished}>
-        <StartModelContent>
-          <EndModelContent>
-            <h3>
-              {isFinished
-                ? 'Congratulations!'
-                : 'The drone has been destroyed...'}
-            </h3>
-            <p>name: {playerName}</p>
-            <p>difficulty: {gameComplexity}</p>
-            <p>score: {score}</p>
-            <p>
-              time:{' '}
-              {`${Math.floor(loopTime / 60000)}:${Math.floor(
-                (loopTime % 60000) / 1000,
-              )}`}
-            </p>
+        <EndModelContent>
+          <h3>
+            {isFinished
+              ? 'Congratulations!'
+              : 'The drone has been destroyed...'}
+          </h3>
+          <p>name: {playerName}</p>
+          <p>difficulty: {gameComplexity}</p>
+          <p>score: {score}</p>
+          <p>
+            time:{' '}
+            {`${Math.floor(loopTime / 60000)}:${Math.floor(
+              (loopTime % 60000) / 1000,
+            )}`}
+          </p>
 
-            <Button onClick={handlePlayAgainBtnClick}>Play again</Button>
-          </EndModelContent>
-        </StartModelContent>
+          <Button onClick={handlePlayAgainBtnClick}>Play again</Button>
+        </EndModelContent>
       </Modal>
     </StyledGame>
   );
