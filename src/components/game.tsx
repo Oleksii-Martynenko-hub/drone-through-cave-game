@@ -3,6 +3,8 @@ import styled from 'styled-components';
 
 import { CaveWebSocket } from 'src/api/cave-web-socket';
 
+import { getAverageLengthOfWall } from 'src/services/get-average-length-of-wall';
+
 import { useAppDispatch, useAppSelector } from 'src/store/store';
 import {
   playerIdActions,
@@ -24,7 +26,6 @@ import {
 import Loader from './common/loader';
 import EndModal from './end-modal';
 import StartModal from './start-modal';
-import { getDistance } from 'src/utils/get-distance';
 
 const StyledGame = styled.div`
   display: flex;
@@ -100,24 +101,9 @@ const Game = () => {
         );
       },
       (walls) => {
-        let distance = 0;
-
-        walls.forEach(([left, right], i) => {
-          if (i == 0) return;
-
-          const [lastLeft, lastRight] = walls[i - 1];
-
-          const distancePassedLeft = getDistance(
-            { x: left, y: 0 },
-            { x: lastLeft, y: 10 },
-          );
-          const distancePassedRight = getDistance(
-            { x: right, y: 0 },
-            { x: lastRight, y: 10 },
-          );
-
-          distance += (distancePassedLeft + distancePassedRight) / 2;
-        });
+        const distance = walls.slice(1, walls.length).reduce((acc, wall, i) => {
+          return acc + getAverageLengthOfWall(wall, walls[i]);
+        }, 0);
 
         dispatch(gameLoopActions.setMaxDistance(distance));
       },

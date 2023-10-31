@@ -49,7 +49,8 @@ const EndModal = ({ onPlayAgainClick }: Props) => {
         <p>difficulty: {complexity}</p>
         <p>score: {score}</p>
         <p>
-          progress: {distance.toFixed(2)}m / {maxDistance.toFixed(2)}m
+          progress: {distance.toFixed(2)}m{' '}
+          {!!maxDistance && `/ ${maxDistance.toFixed(2)}m`}
         </p>
         <p>
           time:{' '}

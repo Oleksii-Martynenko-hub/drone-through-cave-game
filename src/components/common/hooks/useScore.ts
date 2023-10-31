@@ -3,6 +3,7 @@ import { WALL_HEIGHT } from 'src/constants';
 
 import { Point } from 'src/types/common';
 
+import { getAverageLengthOfWall } from 'src/services/get-average-length-of-wall';
 import { getDistance } from 'src/utils/get-distance';
 import { getObjectVelocity } from 'src/utils/get-object-velocity';
 import { getTriangleHeight } from 'src/utils/get-triangle-height';
@@ -50,20 +51,9 @@ export const useScoreBetter = (
     }
 
     if (lastPassedWall && currentWall !== previousWall.current?.index) {
-      const { positions } = previousWall.current!;
-      const [left, right] = positions;
-      const [lastLeft, lastRight] = lastPassedWall;
+      const { positions: wall } = previousWall.current!;
 
-      const distancePassedLeft = getDistance(
-        { x: left, y: 0 },
-        { x: lastLeft, y: 10 },
-      );
-      const distancePassedRight = getDistance(
-        { x: right, y: 0 },
-        { x: lastRight, y: 10 },
-      );
-
-      const distancePassed = (distancePassedLeft + distancePassedRight) / 2;
+      const distancePassed = getAverageLengthOfWall(wall, lastPassedWall);
 
       distance.current += distancePassed;
 
