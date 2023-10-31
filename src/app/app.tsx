@@ -1,7 +1,7 @@
 import styled, { createGlobalStyle } from 'styled-components';
 
 import { useAppSelector } from 'src/store/store';
-import { selectCaveWallsData } from 'src/store/gameLoopSlice/gameLoop.slice';
+import { selectIsEnoughWallsLoaded } from 'src/store/gameLoopSlice/gameLoop.slice';
 
 import ErrorBoundary from './error-boundary';
 import Game from 'src/components/game';
@@ -28,7 +28,7 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 export function App() {
-  const caveWallsData = useAppSelector(selectCaveWallsData);
+  const isEnoughWallsLoaded = useAppSelector(selectIsEnoughWallsLoaded);
 
   return (
     <StyledApp>
@@ -37,7 +37,7 @@ export function App() {
       <ErrorBoundary fallback={<p>Something went wrong</p>}>
         <Game />
 
-        {!!caveWallsData.length && <GameField />}
+        {isEnoughWallsLoaded && <GameField />}
       </ErrorBoundary>
     </StyledApp>
   );

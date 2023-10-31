@@ -17,8 +17,8 @@ import {
 } from 'src/store/tokenSlice/token.slice';
 import {
   gameLoopActions,
-  selectCaveWallsData,
   selectIsDroneCrashed,
+  selectIsEnoughWallsLoaded,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 
 import Loader from './common/loader';
@@ -47,7 +47,7 @@ const Game = () => {
   const playerIdStatus = useAppSelector(selectPlayerIdStatus);
   const tokenStatus = useAppSelector(selectTokenStatus);
 
-  const caveWallsData = useAppSelector(selectCaveWallsData);
+  const isEnoughWallsLoaded = useAppSelector(selectIsEnoughWallsLoaded);
   const isDroneCrashed = useAppSelector(selectIsDroneCrashed);
 
   const [caveWebSocket, setCaveWebSocket] = useState<CaveWebSocket | null>(
@@ -58,7 +58,7 @@ const Game = () => {
   const [isStartModalOpen, setIsStartModalOpen] = useState(true);
 
   useEffect(() => {
-    if (!isGameDataLoading || !caveWallsData.length) return;
+    if (!isGameDataLoading || isEnoughWallsLoaded) return;
 
     const isDataLoaded = [playerIdStatus, tokenStatus].every((status) => {
       return status !== 'not loaded' && status !== 'loading';
@@ -67,7 +67,7 @@ const Game = () => {
     if (isDataLoaded) {
       setIsGameDataLoading(false);
     }
-  }, [isGameDataLoading, playerIdStatus, tokenStatus, caveWallsData]);
+  }, [isGameDataLoading, playerIdStatus, tokenStatus, isEnoughWallsLoaded]);
 
   useLayoutEffect(() => {
     if (!caveWebSocket) {
@@ -91,6 +91,7 @@ const Game = () => {
     caveWebSocket.getCaveWallsData(
       (wallPositions) => {
         dispatch(gameLoopActions.setCaveWallsData([...wallPositions]));
+        dispatch(gameLoopActions.setIsEnoughWallsLoaded(true));
       },
       (additionalWallPositions) => {
         dispatch(

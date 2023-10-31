@@ -15,6 +15,7 @@ export const GAME_LOOP_REDUCER_KEY = 'gameLoopReducer';
 
 export interface GameLoopState {
   caveWallsData: [number, number][];
+  isEnoughWallsLoaded: boolean;
   loopTime: number;
   dronePosition: Point;
   droneSpeed: Point;
@@ -25,6 +26,7 @@ export interface GameLoopState {
 
 export const initialGameLoopState: GameLoopState = {
   caveWallsData: [],
+  isEnoughWallsLoaded: false,
   loopTime: 0,
   dronePosition: { x: 0, y: 0 },
   droneSpeed: { x: 0, y: 0 },
@@ -88,6 +90,9 @@ export const gameLoopSlice = createSlice({
     setIsFinished: (state, action: PayloadAction<boolean>) => {
       state.isFinished = action.payload;
     },
+    setIsEnoughWallsLoaded: (state, action: PayloadAction<boolean>) => {
+      state.isEnoughWallsLoaded = action.payload;
+    },
     clear: () => initialGameLoopState,
   },
 });
@@ -127,6 +132,11 @@ export const selectIsDroneCrashed = createSelector(
 export const selectIsFinished = createSelector(
   getGameLoopState,
   ({ isFinished }) => isFinished,
+);
+
+export const selectIsEnoughWallsLoaded = createSelector(
+  getGameLoopState,
+  ({ isEnoughWallsLoaded }) => isEnoughWallsLoaded,
 );
 
 export const selectScore = createSelector(
