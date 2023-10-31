@@ -14,6 +14,7 @@ import {
   selectCaveWallsData,
   selectDronePosition,
   selectDroneSpeed,
+  selectLoopTime,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 import { selectComplexity } from 'src/store/gameSessionSlice/gameSession.slice';
 
@@ -42,6 +43,7 @@ const GameField = () => {
   const caveWallsData = useAppSelector(selectCaveWallsData);
   const dronePosition = useAppSelector(selectDronePosition);
   const droneSpeed = useAppSelector(selectDroneSpeed);
+  const loopTime = useAppSelector(selectLoopTime);
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
 
@@ -60,39 +62,35 @@ const GameField = () => {
     gameComplexity || 0,
   );
 
-  // TODO: fix multiple listeners,
-  // made hook for group of keys with callback for each key
-  const [isHoldKeyUp, holdKeyUpDuration] = useKeyHold(
-    CONTROL_KEYS.UP,
-    (duration) => {
+  const keyHoldCallback =
+    (key: string) => (duration: number, isFirstCall: boolean) => {
       if (!isRunning) return;
-      const newSpeedY = Math.floor(duration / 100) || 1;
-      dispatch(gameLoopActions.setDroneSpeed({ y: newSpeedY }));
+
+      const axis =
+        key == CONTROL_KEYS.UP || key == CONTROL_KEYS.DOWN ? 'y' : 'x';
+      const trend = key == CONTROL_KEYS.UP || key == CONTROL_KEYS.LEFT ? 1 : -1;
+
+      const additionalSpeed = isFirstCall
+        ? 1
+        : duration > 200
+        ? Math.floor(duration / 200)
+        : duration > 100
+        ? 1
+        : 0;
+
+      dispatch(
+        gameLoopActions.setDroneSpeed({ [axis]: trend * additionalSpeed }),
+      );
+    };
+
+  useKeyHold(
+    {
+      [CONTROL_KEYS.UP]: keyHoldCallback(CONTROL_KEYS.UP),
+      [CONTROL_KEYS.DOWN]: keyHoldCallback(CONTROL_KEYS.DOWN),
+      [CONTROL_KEYS.LEFT]: keyHoldCallback(CONTROL_KEYS.LEFT),
+      [CONTROL_KEYS.RIGHT]: keyHoldCallback(CONTROL_KEYS.RIGHT),
     },
-  );
-  const [isHoldKeyDown, holdKeyDownDuration] = useKeyHold(
-    CONTROL_KEYS.DOWN,
-    (duration) => {
-      if (!isRunning) return;
-      const newSpeedY = Math.floor(duration / 100) || 1;
-      dispatch(gameLoopActions.setDroneSpeed({ y: -newSpeedY }));
-    },
-  );
-  const [isHoldKeyLeft, holdKeyLeftDuration] = useKeyHold(
-    CONTROL_KEYS.LEFT,
-    (duration) => {
-      if (!isRunning) return;
-      const newSpeedX = Math.floor(duration / 100) || 1;
-      dispatch(gameLoopActions.setDroneSpeed({ x: newSpeedX }));
-    },
-  );
-  const [isHoldKeyRight, holdKeyRightDuration] = useKeyHold(
-    CONTROL_KEYS.RIGHT,
-    (duration) => {
-      if (!isRunning) return;
-      const newSpeedX = Math.floor(duration / 100) || 1;
-      dispatch(gameLoopActions.setDroneSpeed({ x: -newSpeedX }));
-    },
+    [loopTime],
   );
 
   const { run, stop, isRunning } = useAnimationFrame((time, delta) => {

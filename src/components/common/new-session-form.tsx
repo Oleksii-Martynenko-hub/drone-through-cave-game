@@ -55,6 +55,7 @@ function NewSessionForm({ initData, onSubmit }: Props) {
   const [difficulty, setDifficulty] = useState(initData.complexity || 0);
 
   function onSubmitForm(e: FormEvent) {
+    // TODO: add data validation
     e.preventDefault();
 
     onSubmit({ name, complexity: difficulty });

@@ -1,34 +1,38 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 export const useKeyHold = (
-  key: string,
-  callback: (duration: number) => void,
-  intervalTime = 50
+  keysWithCallback: {
+    [key: string]: (duration: number, isFirstCall: boolean) => void;
+  },
+  deps: any[],
 ) => {
-  const [isKeyHolding, setIsKeyHolding] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const intervalId = useRef<NodeJS.Timer | null>(null);
-
-  const startInterval = () => {
-    intervalId.current = setInterval(() => {
-      setDuration((prevDuration) => prevDuration + intervalTime);
-    }, intervalTime);
-  };
+  const heldKeys = useRef<{ [key: string]: boolean } | null>(null);
+  const isFirstCallKeys = useRef<{ [key: string]: boolean } | null>(null);
+  const startHoldingTimeStamps = useRef<{ [key: string]: number } | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === key) {
-        if (!intervalId.current) setDuration(0);
-        setIsKeyHolding(true);
-        if (!intervalId.current) startInterval();
+      if (Object.keys(keysWithCallback).includes(event.key)) {
+        const prevHeldKeys = heldKeys.current ?? {};
+        if (prevHeldKeys[event.key]) return;
+
+        heldKeys.current = { ...prevHeldKeys, [event.key]: true };
+
+        const prevIsFirstCallKeys = isFirstCallKeys.current ?? {};
+        isFirstCallKeys.current = { ...prevIsFirstCallKeys, [event.key]: true };
+
+        const prevTimeStamps = startHoldingTimeStamps.current ?? {};
+        startHoldingTimeStamps.current = {
+          ...prevTimeStamps,
+          [event.key]: Date.now(),
+        };
       }
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.key === key) {
-        if (intervalId.current) clearInterval(intervalId.current);
-        intervalId.current = null;
-        setIsKeyHolding(false);
+      if (Object.keys(keysWithCallback).includes(event.key)) {
+        const prevHeldKeys = heldKeys.current ?? {};
+        heldKeys.current = { ...prevHeldKeys, [event.key]: false };
       }
     };
 
@@ -36,18 +40,27 @@ export const useKeyHold = (
     window.addEventListener('keyup', handleKeyUp);
 
     return () => {
-      if (intervalId.current) clearInterval(intervalId.current);
-      intervalId.current = null;
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
 
   useEffect(() => {
-    if (isKeyHolding) {
-      callback(duration);
+    if (
+      heldKeys.current &&
+      startHoldingTimeStamps.current &&
+      isFirstCallKeys.current
+    ) {
+      Object.keys(heldKeys.current).forEach((key) => {
+        if (heldKeys.current?.[key]) {
+          keysWithCallback[key](
+            Date.now() - startHoldingTimeStamps.current![key],
+            isFirstCallKeys.current![key],
+          );
+          const prevIsFirstCallKeys = isFirstCallKeys.current ?? {};
+          isFirstCallKeys.current = { ...prevIsFirstCallKeys, [key]: false };
+        }
+      });
     }
-  }, [isKeyHolding, duration]);
-
-  return [isKeyHolding, duration] as const;
+  }, [...deps]);
 };
