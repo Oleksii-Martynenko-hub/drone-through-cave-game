@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 interface Props {
   score: number;
+  progress: number | null;
   speedY: number;
   speedX: number;
   yMaxSpeed?: number;
@@ -89,8 +90,13 @@ const ScoreValue = styled.span`
   font-weight: 600;
 `;
 
+const Progress = styled(Score)``;
+
+const ProgressValue = styled(ScoreValue)``;
+
 const Gauges = ({
   score,
+  progress,
   speedX,
   speedY,
   yMaxSpeed = 100,
@@ -110,7 +116,7 @@ const Gauges = ({
           {
             '--percent': `${percentSpeedX}%`,
             '--hsl-color': `calc(260 - ${260 / xMaxSpeed} * ${Math.abs(
-              percentSpeedX * 2
+              percentSpeedX * 2,
             )})`,
           } as React.CSSProperties
         }
@@ -128,6 +134,12 @@ const Gauges = ({
       >
         <SpeedTextY>{speedY}</SpeedTextY>
       </VerticalSpeed>
+
+      {progress !== null && (
+        <Progress>
+          progress: <ProgressValue>{progress.toFixed(1)}%</ProgressValue>
+        </Progress>
+      )}
     </StyledGauges>
   );
 };

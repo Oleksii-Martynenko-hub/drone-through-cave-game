@@ -9,26 +9,35 @@ import {
 
 import { RootState } from 'src/store/store';
 import { Point } from 'src/types/common';
+import { getObjectVelocity } from 'src/utils/get-object-velocity';
 import { maxMin } from 'src/utils/max-min';
 
 export const GAME_LOOP_REDUCER_KEY = 'gameLoopReducer';
 
 export interface GameLoopState {
   caveWallsData: [number, number][];
+  isEnoughWallsLoaded: boolean;
   loopTime: number;
   dronePosition: Point;
   droneSpeed: Point;
   isDroneCrashed: boolean;
   isFinished: boolean;
+  score: number;
+  distance: number;
+  maxDistance: number;
 }
 
 export const initialGameLoopState: GameLoopState = {
   caveWallsData: [],
+  isEnoughWallsLoaded: false,
   loopTime: 0,
   dronePosition: { x: 0, y: 0 },
   droneSpeed: { x: 0, y: 0 },
   isDroneCrashed: false,
   isFinished: false,
+  score: 0,
+  distance: 0,
+  maxDistance: 0,
 };
 
 export const gameLoopSlice = createSlice({
@@ -41,47 +50,55 @@ export const gameLoopSlice = createSlice({
     setLoopTime: (state, action: PayloadAction<number>) => {
       state.loopTime += action.payload;
     },
-    setDronePosition: (state, action: PayloadAction<number>) => {
+    setDronePosition: (state, action: PayloadAction<{ delta: number }>) => {
       const { x, y } = state.droneSpeed;
+      const velocity = getObjectVelocity(x, y);
+      const limitVelocityMultiplier = velocity > 100 ? velocity / 100 : 1;
 
       if (x || y) {
-        const newPositionY =
-          state.dronePosition.y + (y * action.payload) / 1000;
-        const newPositionX =
-          state.dronePosition.x + (x * action.payload) / 1000;
+        const newPositionY = (y * action.payload.delta) / 1000;
+        const newPositionX = (x * action.payload.delta) / 1000;
 
-        state.dronePosition = { x: newPositionX, y: newPositionY };
+        state.dronePosition.x += newPositionX / limitVelocityMultiplier;
+        state.dronePosition.y += newPositionY / limitVelocityMultiplier;
       }
     },
     setDroneSpeed: (state, action: PayloadAction<Partial<Point>>) => {
       const { x: prevX, y: prevY } = state.droneSpeed;
-      const { x: addX, y: addY } = action.payload;
+      const addX = action.payload.x ?? 0;
+      const addY = action.payload.y ?? 0;
 
-      if (addX !== undefined) {
-        const newSpeedX = maxMin(
-          prevX + addX,
-          DRONE_MAX_H_SPEED,
-          DRONE_MIN_H_SPEED,
-        );
+      const newSpeedX = maxMin(
+        addX + prevX,
+        DRONE_MAX_H_SPEED,
+        DRONE_MIN_H_SPEED,
+      );
 
-        state.droneSpeed = { x: newSpeedX, y: prevY };
-      }
+      const newSpeedY = maxMin(
+        addY + prevY,
+        DRONE_MAX_V_SPEED,
+        DRONE_MIN_V_SPEED,
+      );
 
-      if (addY !== undefined) {
-        const newSpeedY = maxMin(
-          prevY + addY,
-          DRONE_MAX_V_SPEED,
-          DRONE_MIN_V_SPEED,
-        );
-
-        state.droneSpeed = { y: newSpeedY, x: prevX };
-      }
+      state.droneSpeed = { y: newSpeedY, x: newSpeedX };
+    },
+    setScore: (state, action: PayloadAction<number>) => {
+      state.score = action.payload;
+    },
+    setDistance: (state, action: PayloadAction<number>) => {
+      state.distance = action.payload;
+    },
+    setMaxDistance: (state, action: PayloadAction<number>) => {
+      state.maxDistance = action.payload;
     },
     setIsDroneCrashed: (state, action: PayloadAction<boolean>) => {
       state.isDroneCrashed = action.payload;
     },
     setIsFinished: (state, action: PayloadAction<boolean>) => {
       state.isFinished = action.payload;
+    },
+    setIsEnoughWallsLoaded: (state, action: PayloadAction<boolean>) => {
+      state.isEnoughWallsLoaded = action.payload;
     },
     clear: () => initialGameLoopState,
   },
@@ -122,4 +139,24 @@ export const selectIsDroneCrashed = createSelector(
 export const selectIsFinished = createSelector(
   getGameLoopState,
   ({ isFinished }) => isFinished,
+);
+
+export const selectIsEnoughWallsLoaded = createSelector(
+  getGameLoopState,
+  ({ isEnoughWallsLoaded }) => isEnoughWallsLoaded,
+);
+
+export const selectScore = createSelector(
+  getGameLoopState,
+  ({ score }) => score,
+);
+
+export const selectDistance = createSelector(
+  getGameLoopState,
+  ({ distance }) => distance,
+);
+
+export const selectMaxDistance = createSelector(
+  getGameLoopState,
+  ({ maxDistance }) => maxDistance,
 );

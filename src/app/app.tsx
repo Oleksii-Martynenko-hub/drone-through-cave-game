@@ -1,10 +1,11 @@
 import styled, { createGlobalStyle } from 'styled-components';
-import { Provider } from 'react-redux';
 
-import { store } from 'src/store/store';
+import { useAppSelector } from 'src/store/store';
+import { selectIsEnoughWallsLoaded } from 'src/store/gameLoopSlice/gameLoop.slice';
 
 import ErrorBoundary from './error-boundary';
 import Game from 'src/components/game';
+import GameField from 'src/components/game-field/game-field';
 
 import 'normalize.css';
 
@@ -27,16 +28,18 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 export function App() {
-  return (
-    <Provider store={store}>
-      <StyledApp>
-        <GlobalStyle />
+  const isEnoughWallsLoaded = useAppSelector(selectIsEnoughWallsLoaded);
 
-        <ErrorBoundary fallback={<p>Something went wrong</p>}>
-          <Game />
-        </ErrorBoundary>
-      </StyledApp>
-    </Provider>
+  return (
+    <StyledApp>
+      <GlobalStyle />
+
+      <ErrorBoundary fallback={<p>Something went wrong</p>}>
+        <Game />
+
+        {isEnoughWallsLoaded && <GameField />}
+      </ErrorBoundary>
+    </StyledApp>
   );
 }
 

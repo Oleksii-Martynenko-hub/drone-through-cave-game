@@ -15,6 +15,8 @@ const StyledScoreBoard = styled.table`
   background: whitesmoke;
   border-radius: 6px;
 
+  margin-top: 40px;
+
   th {
     background: #e4e4e4;
     padding: 12px 20px;

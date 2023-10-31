@@ -6,7 +6,7 @@
     {
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nx/typescript"],
-      "rules": {}
+      "rules": { "eqeqeq": "off" }
     },
     {
       "files": ["*.js", "*.jsx"],
