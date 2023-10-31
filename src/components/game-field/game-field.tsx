@@ -18,14 +18,14 @@ import {
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 import { selectComplexity } from 'src/store/gameSessionSlice/gameSession.slice';
 
-import { useKeyHold } from './common/hooks/useKeyHold';
-import { useScoreBetter } from './common/hooks/useScore';
-import { useWindowSize } from './common/hooks/useWindowSize';
-import { useAnimationFrame } from './common/hooks/useAnimationFrame';
-import { useDroneSidesPoints } from './common/hooks/useDroneSidesPoints';
-import { useIntersectionPoint } from './common/hooks/useIntersectionPoint';
+import { useKeyHold } from '../common/hooks/useKeyHold';
+import { useScoreBetter } from '../common/hooks/useScore';
+import { useWindowSize } from '../common/hooks/useWindowSize';
+import { useAnimationFrame } from '../common/hooks/useAnimationFrame';
+import { useDroneSidesPoints } from '../common/hooks/useDroneSidesPoints';
+import { useIntersectionPoint } from '../common/hooks/useIntersectionPoint';
 
-import Gauges from './gauges';
+import Gauges from '../gauges';
 
 const StyledGameField = styled.div`
   position: relative;
@@ -94,7 +94,7 @@ const GameField = () => {
   );
 
   const { run, stop, isRunning } = useAnimationFrame((time, delta) => {
-    dispatch(gameLoopActions.setDronePosition(delta));
+    dispatch(gameLoopActions.setDronePosition({ delta }));
 
     dispatch(gameLoopActions.setLoopTime(delta));
   });

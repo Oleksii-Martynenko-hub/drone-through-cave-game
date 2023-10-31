@@ -5,7 +5,7 @@ import { selectIsEnoughWallsLoaded } from 'src/store/gameLoopSlice/gameLoop.slic
 
 import ErrorBoundary from './error-boundary';
 import Game from 'src/components/game';
-import GameField from 'src/components/game-field';
+import GameField from 'src/components/game-field/game-field';
 
 import 'normalize.css';
 
