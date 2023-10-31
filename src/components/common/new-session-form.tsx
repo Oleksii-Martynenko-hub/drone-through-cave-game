@@ -18,7 +18,7 @@ const Form = styled.form`
   flex-wrap: wrap;
 
   max-width: 320px;
-  margin-bottom: 40px;
+  margin: 0 auto;
 `;
 
 const Input = styled.input`
@@ -29,7 +29,7 @@ const Input = styled.input`
   border-radius: 6px;
 
   flex: 100%;
-  margin-bottom: 10px;
+  margin: 10px 0 20px 0;
 `;
 
 const InputRangeWrapper = styled.div`
@@ -39,7 +39,7 @@ const InputRangeWrapper = styled.div`
   width: 100%;
   color: white;
   font-size: 26px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 
   input {
     grid-column: 1 / 3;
@@ -50,13 +50,31 @@ const PlayButton = styled(Button)`
   flex: 1 1 auto;
 `;
 
+const ErrorMessage = styled.p`
+  font-size: 16px;
+  line-height: 16px;
+  margin: -14px 0 -8px 0;
+  color: #dd5c5c;
+`;
+
 function NewSessionForm({ initData, onSubmit }: Props) {
   const [name, setName] = useState(initData.name || '');
   const [difficulty, setDifficulty] = useState(initData.complexity || 0);
 
+  const [validationErrors, setValidationErrors] = useState<{
+    [key: string]: string;
+  }>({});
+
   function onSubmitForm(e: FormEvent) {
-    // TODO: add data validation
     e.preventDefault();
+    if (!name) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        name: "Please choose the player's name!",
+      }));
+
+      return;
+    }
 
     onSubmit({ name, complexity: difficulty });
     setName('');
@@ -65,6 +83,16 @@ function NewSessionForm({ initData, onSubmit }: Props) {
 
   function onChangePlayerName(e: ChangeEvent<HTMLInputElement>) {
     setName(e.target.value);
+
+    if (!e.target.value) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        name: "Please choose the player's name!",
+      }));
+      return;
+    }
+
+    setValidationErrors((prev) => ({ ...prev, name: '' }));
   }
 
   function onChangeDifficulty(e: ChangeEvent<HTMLInputElement>) {
@@ -73,6 +101,9 @@ function NewSessionForm({ initData, onSubmit }: Props) {
 
   return (
     <Form onSubmit={onSubmitForm}>
+      {!!validationErrors['name'] && (
+        <ErrorMessage>{validationErrors['name']}</ErrorMessage>
+      )}
       <Input
         type="text"
         name="name"
