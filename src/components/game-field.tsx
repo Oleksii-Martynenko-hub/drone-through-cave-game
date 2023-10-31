@@ -42,11 +42,10 @@ const GameField = () => {
     dronePosition.y,
   );
 
-  // TODO: change args to decrease renders
-  const passedWall = Math.floor(dronePosition.y / WALL_HEIGHT);
   //TODO: add scores to loop slice
   const score = useScoreBetter(
-    caveWallsData.slice(passedWall, passedWall + 1)?.[0],
+    caveWallsData,
+    dronePosition.y,
     droneSpeed,
     gameComplexity || 0,
   );
@@ -215,6 +214,19 @@ const GameField = () => {
         )}
         `}
       />
+      {droneSidesPoints.length && (
+        <text
+          fontSize={10}
+          fill="black"
+          fontWeight={600}
+          strokeWidth={0.3}
+          stroke="white"
+          x={droneSidesPoints[0][1].x + GAME_FIELD_MIN_WIDTH / 2 + 15}
+          y={droneSidesPoints[0][1].y + 20}
+        >
+          {score}
+        </text>
+      )}
 
       {/* TODO: move to separated component */}
       {intersectionPoint && (
