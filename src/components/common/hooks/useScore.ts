@@ -5,6 +5,7 @@ import { Point } from 'src/types/common';
 
 import { getDistance } from 'src/utils/get-distance';
 import { getObjectVelocity } from 'src/utils/get-object-velocity';
+import { getTriangleHeight } from 'src/utils/get-triangle-height';
 
 export const useScore = (
   wallsPassed: number,
@@ -68,15 +69,59 @@ export const useScoreBetter = (
 
       const droneVelocity = getObjectVelocity(droneSpeed.x, droneSpeed.y);
 
-      // TODO: improve by calculate smallest cave width
-      // instead width between l and r points on the same height
-      const caveWidth = lastPassedWall[1] - lastPassedWall[0];
-      const caveWidthMultiplier = (200 - caveWidth) / 10;
+      const walls = caveWallsData.slice(
+        Math.max(0, currentWall - 3),
+        currentWall + 4,
+      );
+
+      const l = walls.map(([l, r]) => l);
+      const r = walls.map(([l, r]) => r);
+
+      const caveWidth = lastPassedWall.map((px, s) => {
+        const side = s === 0 ? r : l;
+        const nearestPointsAbove = side.slice(0, 3).map((x, j) => {
+          return {
+            d: getDistance({ x: px, y: j }, { x: x, y: -30 + j * 10 }),
+            p: { x, y: -30 + j * 10 },
+          };
+        });
+        const nearestPointsBelow = side.slice(3, 7).map((x, j) => {
+          return {
+            d: getDistance({ x: px, y: j }, { x, y: j * 10 }),
+            p: { x, y: j * 10 },
+          };
+        });
+
+        const sortedNearestPoints = nearestPointsAbove
+          .concat(nearestPointsBelow)
+          .sort((a, b) => {
+            return a.d - b.d;
+          });
+
+        if (sortedNearestPoints.length >= 2) {
+          const sideA = getDistance(
+            sortedNearestPoints[0].p,
+            sortedNearestPoints[1].p,
+          );
+          return getTriangleHeight(
+            sideA,
+            sortedNearestPoints[0].d,
+            sortedNearestPoints[1].d,
+          );
+        }
+
+        return 200;
+      });
+
+      const midCaveWidth = (caveWidth[0] + caveWidth[1]) / 2;
+      const caveWidthMultiplier = (200 - midCaveWidth) / 10;
 
       const complexityMultiplier = droneVelocity + complexity * 2;
-      const calculatedAdditionalScore =
+      const calculatedAdditionalScore = Math.max(
         distancePassed * scoreMultiplier * complexityMultiplier +
-        caveWidthMultiplier;
+          caveWidthMultiplier,
+        0,
+      );
 
       setScore((prev) => Math.round(prev + calculatedAdditionalScore));
 
