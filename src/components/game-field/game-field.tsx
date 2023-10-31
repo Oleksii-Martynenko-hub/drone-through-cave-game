@@ -25,7 +25,11 @@ import { useAnimationFrame } from '../common/hooks/useAnimationFrame';
 import { useDroneSidesPoints } from '../common/hooks/useDroneSidesPoints';
 import { useIntersectionPoint } from '../common/hooks/useIntersectionPoint';
 
+import Drone from './drone';
+import Walls from './walls';
 import Gauges from '../gauges';
+import FinishLine from './finish-line';
+import IntersectionPoint from './intersection-point';
 
 const StyledGameField = styled.div`
   position: relative;
@@ -182,64 +186,28 @@ const GameField = () => {
         version="1.1"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* TODO: move to separated component */}
         {isLastWallDrawn && (
-          <line
-            x1={GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[0] - 2}
-            x2={GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[1] + 2}
-            y1={calcHeight - 1 - finishLineOffsetY}
-            y2={calcHeight - 1 - finishLineOffsetY}
-            stroke="#4fccff"
-            strokeWidth="2"
+          <FinishLine
+            lastVisibleWall={lastVisibleWall}
+            finishLineOffsetY={finishLineOffsetY}
+            calcHeight={calcHeight}
           />
         )}
-        {/* TODO: move to separated component */}
-        <polygon
-          fill="#646464"
-          points={`0,${calcHeight} 0,${0 - offsetY} ${slicedWalls
-            .map(
-              ([left, _], i) =>
-                `${GAME_FIELD_MIN_WIDTH / 2 + left},${
-                  i * WALL_HEIGHT - offsetY
-                }`,
-            )
-            .join(' ')} ${
-            GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[0]
-          },${calcHeight}`}
+
+        <Walls
+          slicedWalls={slicedWalls}
+          lastVisibleWall={lastVisibleWall}
+          offsetY={offsetY}
+          calcHeight={calcHeight}
         />
-        <polygon
-          fill="#646464"
-          points={`${GAME_FIELD_MIN_WIDTH},${calcHeight} ${GAME_FIELD_MIN_WIDTH},${
-            0 - offsetY
-          } ${slicedWalls
-            .map(
-              ([_, right], i) =>
-                `${GAME_FIELD_MIN_WIDTH / 2 + right},${
-                  i * WALL_HEIGHT - offsetY
-                }`,
-            )
-            .join(' ')} ${
-            GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[1]
-          },${calcHeight}`}
+
+        <Drone
+          droneSidesPoints={droneSidesPoints}
+          intersectionPoint={intersectionPoint}
         />
-        {/* TODO: move to separated component */}
-        <polygon
-          fill={intersectionPoint ? 'red' : '#32c800'}
-          points={`${droneSidesPoints.map(
-            ([a]) => `${a.x + GAME_FIELD_MIN_WIDTH / 2},${a.y} `,
-          )}
-        `}
-        />
-        {/* TODO: move to separated component */}
+
         {intersectionPoint && (
-          <circle
-            cx={intersectionPoint.x + GAME_FIELD_MIN_WIDTH / 2}
-            cy={intersectionPoint.y}
-            r="1"
-            stroke="lightgreen"
-            fill="yellow"
-            strokeWidth="1"
-          />
+          <IntersectionPoint intersectionPoint={intersectionPoint} />
         )}
       </svg>
     </StyledGameField>
