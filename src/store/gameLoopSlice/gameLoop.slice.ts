@@ -23,6 +23,8 @@ export interface GameLoopState {
   isDroneCrashed: boolean;
   isFinished: boolean;
   score: number;
+  distance: number;
+  maxDistance: number;
 }
 
 export const initialGameLoopState: GameLoopState = {
@@ -34,6 +36,8 @@ export const initialGameLoopState: GameLoopState = {
   isDroneCrashed: false,
   isFinished: false,
   score: 0,
+  distance: 0,
+  maxDistance: 0,
 };
 
 export const gameLoopSlice = createSlice({
@@ -80,6 +84,12 @@ export const gameLoopSlice = createSlice({
     },
     setScore: (state, action: PayloadAction<number>) => {
       state.score = action.payload;
+    },
+    setDistance: (state, action: PayloadAction<number>) => {
+      state.distance = action.payload;
+    },
+    setMaxDistance: (state, action: PayloadAction<number>) => {
+      state.maxDistance = action.payload;
     },
     setIsDroneCrashed: (state, action: PayloadAction<boolean>) => {
       state.isDroneCrashed = action.payload;
@@ -139,4 +149,14 @@ export const selectIsEnoughWallsLoaded = createSelector(
 export const selectScore = createSelector(
   getGameLoopState,
   ({ score }) => score,
+);
+
+export const selectDistance = createSelector(
+  getGameLoopState,
+  ({ distance }) => distance,
+);
+
+export const selectMaxDistance = createSelector(
+  getGameLoopState,
+  ({ maxDistance }) => maxDistance,
 );

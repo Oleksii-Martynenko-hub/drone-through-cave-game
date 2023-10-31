@@ -6,9 +6,11 @@ import {
   selectName,
 } from 'src/store/gameSessionSlice/gameSession.slice';
 import {
+  selectDistance,
   selectIsDroneCrashed,
   selectIsFinished,
   selectLoopTime,
+  selectMaxDistance,
   selectScore,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 
@@ -31,6 +33,8 @@ const EndModal = ({ onPlayAgainClick }: Props) => {
   const complexity = useAppSelector(selectComplexity);
   const score = useAppSelector(selectScore);
   const loopTime = useAppSelector(selectLoopTime);
+  const maxDistance = useAppSelector(selectMaxDistance);
+  const distance = useAppSelector(selectDistance);
 
   const isFinished = useAppSelector(selectIsFinished);
   const isDroneCrashed = useAppSelector(selectIsDroneCrashed);
@@ -44,6 +48,9 @@ const EndModal = ({ onPlayAgainClick }: Props) => {
         <p>name: {name}</p>
         <p>difficulty: {complexity}</p>
         <p>score: {score}</p>
+        <p>
+          progress: {distance.toFixed(2)}m / {maxDistance.toFixed(2)}m
+        </p>
         <p>
           time:{' '}
           {`${Math.floor(loopTime / 60000)}:${Math.floor(

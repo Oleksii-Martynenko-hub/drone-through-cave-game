@@ -15,6 +15,7 @@ import {
   selectDronePosition,
   selectDroneSpeed,
   selectLoopTime,
+  selectMaxDistance,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 import { selectComplexity } from 'src/store/gameSessionSlice/gameSession.slice';
 
@@ -48,6 +49,7 @@ const GameField = () => {
   const dronePosition = useAppSelector(selectDronePosition);
   const droneSpeed = useAppSelector(selectDroneSpeed);
   const loopTime = useAppSelector(selectLoopTime);
+  const maxDistance = useAppSelector(selectMaxDistance);
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
 
@@ -59,7 +61,7 @@ const GameField = () => {
     dronePosition.y,
   );
 
-  const score = useScoreBetter(
+  const { score, distance } = useScoreBetter(
     caveWallsData,
     dronePosition.y,
     droneSpeed,
@@ -128,6 +130,7 @@ const GameField = () => {
       stop();
 
       dispatch(gameLoopActions.setScore(score));
+      dispatch(gameLoopActions.setDistance(distance));
       dispatch(gameLoopActions.setIsDroneCrashed(true));
     }
   }, [dispatch, intersectionPoint]);
@@ -175,7 +178,12 @@ const GameField = () => {
   return (
     <StyledGameField>
       <StyledGaugesWrapper>
-        <Gauges score={score} speedY={droneSpeed.y} speedX={droneSpeed.x} />
+        <Gauges
+          score={score}
+          progress={maxDistance ? (distance / maxDistance) * 100 : null}
+          speedY={droneSpeed.y}
+          speedX={droneSpeed.x}
+        />
       </StyledGaugesWrapper>
 
       <svg

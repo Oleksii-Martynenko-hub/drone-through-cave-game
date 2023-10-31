@@ -129,5 +129,5 @@ export const useScoreBetter = (
     }
   }, [dronePositionY]);
 
-  return score;
+  return { score, distance: distance.current };
 };
