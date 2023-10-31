@@ -42,7 +42,6 @@ const GameField = () => {
     dronePosition.y,
   );
 
-  //TODO: add scores to loop slice
   const score = useScoreBetter(
     caveWallsData,
     dronePosition.y,
@@ -106,6 +105,7 @@ const GameField = () => {
     if (intersectFinishedLine && caveWallsData.length) {
       stop();
 
+      dispatch(gameLoopActions.setScore(score));
       dispatch(gameLoopActions.setIsFinished(true));
     }
   }, [dronePosition, isRunning]);
@@ -153,6 +153,8 @@ const GameField = () => {
   useEffect(() => {
     if (intersectionPoint) {
       stop();
+
+      dispatch(gameLoopActions.setScore(score));
       dispatch(gameLoopActions.setIsDroneCrashed(true));
     }
   }, [dispatch, intersectionPoint]);

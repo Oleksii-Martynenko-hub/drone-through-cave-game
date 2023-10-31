@@ -32,6 +32,7 @@ import {
   selectIsDroneCrashed,
   selectIsFinished,
   selectLoopTime,
+  selectScore,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 
 import { useLocalStorage } from './common/hooks/useLocalStorage';
@@ -80,6 +81,7 @@ const Game = (props: any) => {
   const isFinished = useAppSelector(selectIsFinished);
   const isDroneCrashed = useAppSelector(selectIsDroneCrashed);
   const loopTime = useAppSelector(selectLoopTime);
+  const score = useAppSelector(selectScore);
 
   const [caveWebSocket, setCaveWebSocket] = useState<CaveWebSocket | null>(
     null,
@@ -151,7 +153,7 @@ const Game = (props: any) => {
           id: playerId,
           name: playerName,
           difficulty: gameComplexity,
-          score: 0, // TODO: add score to loop slice
+          score,
         },
       ]);
     }
@@ -217,7 +219,7 @@ const Game = (props: any) => {
             </h3>
             <p>name: {playerName}</p>
             <p>difficulty: {gameComplexity}</p>
-            {/* <p>score: {score}</p> */}
+            <p>score: {score}</p>
             <p>
               time:{' '}
               {`${Math.floor(loopTime / 60000)}:${Math.floor(

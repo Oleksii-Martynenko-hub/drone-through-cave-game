@@ -20,6 +20,7 @@ export interface GameLoopState {
   droneSpeed: Point;
   isDroneCrashed: boolean;
   isFinished: boolean;
+  score: number;
 }
 
 export const initialGameLoopState: GameLoopState = {
@@ -29,6 +30,7 @@ export const initialGameLoopState: GameLoopState = {
   droneSpeed: { x: 0, y: 0 },
   isDroneCrashed: false,
   isFinished: false,
+  score: 0,
 };
 
 export const gameLoopSlice = createSlice({
@@ -77,6 +79,9 @@ export const gameLoopSlice = createSlice({
         state.droneSpeed = { y: newSpeedY, x: prevX };
       }
     },
+    setScore: (state, action: PayloadAction<number>) => {
+      state.score = action.payload;
+    },
     setIsDroneCrashed: (state, action: PayloadAction<boolean>) => {
       state.isDroneCrashed = action.payload;
     },
@@ -122,4 +127,9 @@ export const selectIsDroneCrashed = createSelector(
 export const selectIsFinished = createSelector(
   getGameLoopState,
   ({ isFinished }) => isFinished,
+);
+
+export const selectScore = createSelector(
+  getGameLoopState,
+  ({ score }) => score,
 );
