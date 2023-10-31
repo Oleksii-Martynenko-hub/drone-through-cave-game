@@ -58,13 +58,13 @@ const Game = () => {
   const [isStartModalOpen, setIsStartModalOpen] = useState(true);
 
   useEffect(() => {
-    if (!isGameDataLoading || isEnoughWallsLoaded) return;
+    if (!isGameDataLoading) return;
 
     const isDataLoaded = [playerIdStatus, tokenStatus].every((status) => {
       return status !== 'not loaded' && status !== 'loading';
     });
 
-    if (isDataLoaded) {
+    if (isDataLoaded && isEnoughWallsLoaded) {
       setIsGameDataLoading(false);
     }
   }, [isGameDataLoading, playerIdStatus, tokenStatus, isEnoughWallsLoaded]);
