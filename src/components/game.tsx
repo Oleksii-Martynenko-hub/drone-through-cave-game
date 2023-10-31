@@ -3,11 +3,7 @@ import styled from 'styled-components';
 
 import { GameSession, WithoutNull } from 'src/types/common';
 
-import {
-  CONTROL_KEYS,
-  SCORE_BOARD_LOCAL_STORAGE_KEY,
-  WALL_HEIGHT,
-} from 'src/constants';
+import { SCORE_BOARD_LOCAL_STORAGE_KEY } from 'src/constants';
 
 import { CaveWebSocket } from 'src/api/cave-web-socket';
 
@@ -33,25 +29,18 @@ import {
 import {
   gameLoopActions,
   selectCaveWallsData,
-  selectDronePosition,
-  selectDroneSpeed,
   selectIsDroneCrashed,
   selectIsFinished,
   selectLoopTime,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 
-import Gauges from './gauges';
-import GameField from './game-field';
-import Scoreboard from './scoreboard';
+import { useLocalStorage } from './common/hooks/useLocalStorage';
+
 import Modal from './common/modal';
 import Loader from './common/loader';
 import Button from './common/button';
 import NewSessionForm from './common/new-session-form';
-
-import { useKeyHold } from './common/hooks/useKeyHold';
-import { useScoreBetter } from './common/hooks/useScore';
-import { useLocalStorage } from './common/hooks/useLocalStorage';
-import { useAnimationFrame } from './common/hooks/useAnimationFrame';
+import Scoreboard from './scoreboard';
 
 const StyledGame = styled.div`
   display: flex;
@@ -88,8 +77,6 @@ const Game = (props: any) => {
   const tokenStatus = useAppSelector(selectTokenStatus);
 
   const caveWallsData = useAppSelector(selectCaveWallsData);
-  const dronePosition = useAppSelector(selectDronePosition);
-  const droneSpeed = useAppSelector(selectDroneSpeed);
   const isFinished = useAppSelector(selectIsFinished);
   const isDroneCrashed = useAppSelector(selectIsDroneCrashed);
   const loopTime = useAppSelector(selectLoopTime);
@@ -100,53 +87,9 @@ const Game = (props: any) => {
 
   const [isStartModalOpen, setIsStartModalOpen] = useState(true);
   const [isGameDataLoading, setIsGameDataLoading] = useState(false);
-
-  // TODO: change args to decrease renders
-  const passedWall = Math.floor(dronePosition.y / WALL_HEIGHT);
-  const score = useScoreBetter(
-    caveWallsData.slice(passedWall, passedWall + 1)?.[0],
-    droneSpeed,
-    gameComplexity || 0,
-  );
-
   const [scoreBoardData, setScoreBoardData] = useLocalStorage<GameSession[]>(
     SCORE_BOARD_LOCAL_STORAGE_KEY,
     [],
-  );
-
-  // TODO: fix multiple listeners,
-  // made hook for group of keys with callback for each key
-  const [isHoldKeyUp, holdKeyUpDuration] = useKeyHold(
-    CONTROL_KEYS.UP,
-    (duration) => {
-      if (!isRunning) return;
-      const newSpeedY = Math.floor(duration / 100) || 1;
-      dispatch(gameLoopActions.setDroneSpeed({ y: newSpeedY }));
-    },
-  );
-  const [isHoldKeyDown, holdKeyDownDuration] = useKeyHold(
-    CONTROL_KEYS.DOWN,
-    (duration) => {
-      if (!isRunning) return;
-      const newSpeedY = Math.floor(duration / 100) || 1;
-      dispatch(gameLoopActions.setDroneSpeed({ y: -newSpeedY }));
-    },
-  );
-  const [isHoldKeyLeft, holdKeyLeftDuration] = useKeyHold(
-    CONTROL_KEYS.LEFT,
-    (duration) => {
-      if (!isRunning) return;
-      const newSpeedX = Math.floor(duration / 100) || 1;
-      dispatch(gameLoopActions.setDroneSpeed({ x: newSpeedX }));
-    },
-  );
-  const [isHoldKeyRight, holdKeyRightDuration] = useKeyHold(
-    CONTROL_KEYS.RIGHT,
-    (duration) => {
-      if (!isRunning) return;
-      const newSpeedX = Math.floor(duration / 100) || 1;
-      dispatch(gameLoopActions.setDroneSpeed({ x: -newSpeedX }));
-    },
   );
 
   useEffect(() => {
@@ -198,53 +141,24 @@ const Game = (props: any) => {
     };
   }, [playerId, token, caveWebSocket]);
 
-  const { run, stop, isRunning } = useAnimationFrame((time, delta) => {
-    dispatch(gameLoopActions.setDronePosition(delta));
-
-    dispatch(gameLoopActions.setLoopTime(delta));
-  });
-
   useEffect(() => {
-    if (
-      isDroneCrashed ||
-      isFinished ||
-      !caveWallsData.length ||
-      isGameDataLoading
-    )
-      return;
+    if (!isFinished) return;
 
-    if (!isRunning) {
-      run();
+    if (playerName && gameComplexity && playerId) {
+      setScoreBoardData((prev) => [
+        ...prev,
+        {
+          id: playerId,
+          name: playerName,
+          difficulty: gameComplexity,
+          score: 0, // TODO: add score to loop slice
+        },
+      ]);
     }
-  }, [caveWallsData, isGameDataLoading]);
-
-  useEffect(() => {
-    if (!isRunning) return;
-
-    const intersectFinishedLine =
-      dronePosition.y >= (caveWallsData.length - 1) * WALL_HEIGHT;
-
-    if (intersectFinishedLine && caveWallsData.length) {
-      stop();
-
-      if (playerName && gameComplexity && playerId) {
-        setScoreBoardData((prev) => [
-          ...prev,
-          {
-            id: playerId,
-            name: playerName,
-            difficulty: gameComplexity,
-            score,
-          },
-        ]);
-        dispatch(gameLoopActions.setIsFinished(true));
-      }
-    }
-  }, [dronePosition, isRunning]);
+  }, [isFinished]);
 
   useEffect(() => {
     if (isDroneCrashed) {
-      stop();
       caveWebSocket?.Socket.close();
     }
   }, [isDroneCrashed]);
@@ -292,18 +206,6 @@ const Game = (props: any) => {
         </StartModelContent>
       </Modal>
 
-      {/* TODO: move to separated component, show when enough walls loaded */}
-      {!!caveWallsData.length && (
-        <>
-          <Gauges score={score} speedY={droneSpeed.y} speedX={droneSpeed.x} />
-
-          <GameField
-            dronePosition={dronePosition}
-            caveWallsData={caveWallsData}
-          />
-        </>
-      )}
-
       {/* TODO: move to separated component */}
       <Modal isOpen={isDroneCrashed || isFinished}>
         <StartModelContent>
@@ -315,9 +217,9 @@ const Game = (props: any) => {
             </h3>
             <p>name: {playerName}</p>
             <p>difficulty: {gameComplexity}</p>
-            <p>score: {score}</p>
+            {/* <p>score: {score}</p> */}
             <p>
-              loopTime:{' '}
+              time:{' '}
               {`${Math.floor(loopTime / 60000)}:${Math.floor(
                 (loopTime % 60000) / 1000,
               )}`}

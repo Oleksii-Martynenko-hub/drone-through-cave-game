@@ -1,27 +1,36 @@
 import { useEffect, useState } from 'react';
 
 import {
+  WALL_HEIGHT,
+  CONTROL_KEYS,
   GAME_FIELD_MAX_WIDTH,
   GAME_FIELD_MIN_WIDTH,
-  WALL_HEIGHT,
 } from 'src/constants';
 
-import { Point } from 'src/types/common';
+import { useAppDispatch, useAppSelector } from 'src/store/store';
+import {
+  gameLoopActions,
+  selectCaveWallsData,
+  selectDronePosition,
+  selectDroneSpeed,
+} from 'src/store/gameLoopSlice/gameLoop.slice';
+import { selectComplexity } from 'src/store/gameSessionSlice/gameSession.slice';
 
+import { useKeyHold } from './common/hooks/useKeyHold';
+import { useScoreBetter } from './common/hooks/useScore';
 import { useWindowSize } from './common/hooks/useWindowSize';
+import { useAnimationFrame } from './common/hooks/useAnimationFrame';
 import { useDroneSidesPoints } from './common/hooks/useDroneSidesPoints';
 import { useIntersectionPoint } from './common/hooks/useIntersectionPoint';
 
-import { useAppDispatch } from 'src/store/store';
-import { gameLoopActions } from 'src/store/gameLoopSlice/gameLoop.slice';
-
-interface Props {
-  dronePosition: Point;
-  caveWallsData: [number, number][];
-}
-
-const GameField = ({ dronePosition, caveWallsData }: Props) => {
+const GameField = () => {
   const dispatch = useAppDispatch();
+
+  const gameComplexity = useAppSelector(selectComplexity);
+
+  const caveWallsData = useAppSelector(selectCaveWallsData);
+  const dronePosition = useAppSelector(selectDronePosition);
+  const droneSpeed = useAppSelector(selectDroneSpeed);
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
 
@@ -32,6 +41,75 @@ const GameField = ({ dronePosition, caveWallsData }: Props) => {
     caveWallsData,
     dronePosition.y,
   );
+
+  // TODO: change args to decrease renders
+  const passedWall = Math.floor(dronePosition.y / WALL_HEIGHT);
+  //TODO: add scores to loop slice
+  const score = useScoreBetter(
+    caveWallsData.slice(passedWall, passedWall + 1)?.[0],
+    droneSpeed,
+    gameComplexity || 0,
+  );
+
+  // TODO: fix multiple listeners,
+  // made hook for group of keys with callback for each key
+  const [isHoldKeyUp, holdKeyUpDuration] = useKeyHold(
+    CONTROL_KEYS.UP,
+    (duration) => {
+      if (!isRunning) return;
+      const newSpeedY = Math.floor(duration / 100) || 1;
+      dispatch(gameLoopActions.setDroneSpeed({ y: newSpeedY }));
+    },
+  );
+  const [isHoldKeyDown, holdKeyDownDuration] = useKeyHold(
+    CONTROL_KEYS.DOWN,
+    (duration) => {
+      if (!isRunning) return;
+      const newSpeedY = Math.floor(duration / 100) || 1;
+      dispatch(gameLoopActions.setDroneSpeed({ y: -newSpeedY }));
+    },
+  );
+  const [isHoldKeyLeft, holdKeyLeftDuration] = useKeyHold(
+    CONTROL_KEYS.LEFT,
+    (duration) => {
+      if (!isRunning) return;
+      const newSpeedX = Math.floor(duration / 100) || 1;
+      dispatch(gameLoopActions.setDroneSpeed({ x: newSpeedX }));
+    },
+  );
+  const [isHoldKeyRight, holdKeyRightDuration] = useKeyHold(
+    CONTROL_KEYS.RIGHT,
+    (duration) => {
+      if (!isRunning) return;
+      const newSpeedX = Math.floor(duration / 100) || 1;
+      dispatch(gameLoopActions.setDroneSpeed({ x: -newSpeedX }));
+    },
+  );
+
+  const { run, stop, isRunning } = useAnimationFrame((time, delta) => {
+    dispatch(gameLoopActions.setDronePosition(delta));
+
+    dispatch(gameLoopActions.setLoopTime(delta));
+  });
+
+  useEffect(() => {
+    if (!isRunning) {
+      run();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const intersectFinishedLine =
+      dronePosition.y >= (caveWallsData.length - 1) * WALL_HEIGHT;
+
+    if (intersectFinishedLine && caveWallsData.length) {
+      stop();
+
+      dispatch(gameLoopActions.setIsFinished(true));
+    }
+  }, [dronePosition, isRunning]);
 
   const offsetY = dronePosition.y % WALL_HEIGHT;
 
@@ -75,11 +153,14 @@ const GameField = ({ dronePosition, caveWallsData }: Props) => {
 
   useEffect(() => {
     if (intersectionPoint) {
+      stop();
       dispatch(gameLoopActions.setIsDroneCrashed(true));
     }
   }, [dispatch, intersectionPoint]);
 
   return (
+    // TODO: add gauges to game field
+    // <Gauges score={score} speedY={droneSpeed.y} speedX={droneSpeed.x} />
     <svg
       style={{ background: 'white', margin: '0 auto' }}
       width={calcWidth}
