@@ -31,7 +31,7 @@ export const useScoreBetter = (
   complexity: number,
 ) => {
   const [score, setScore] = useState(0);
-  const scoreMultiplier = 0.1;
+  const scoreMultiplier = useRef(0.01);
   const previousWall = useRef<{
     index: number;
     positions: [number, number];
@@ -57,7 +57,10 @@ export const useScoreBetter = (
 
       distance.current += distancePassed;
 
-      const droneVelocity = getObjectVelocity(droneSpeed.x, droneSpeed.y);
+      const droneVelocity = Math.min(
+        getObjectVelocity(droneSpeed.x, droneSpeed.y),
+        100,
+      );
 
       const walls = caveWallsData.slice(
         Math.max(0, currentWall - 3),
@@ -106,9 +109,11 @@ export const useScoreBetter = (
       const midCaveWidth = (caveWidth[0] + caveWidth[1]) / 2;
       const caveWidthMultiplier = (200 - midCaveWidth) / 10;
 
-      const complexityMultiplier = droneVelocity + complexity * 2;
+      const complexityMultiplier = droneVelocity / 2 + complexity * 3;
       const calculatedAdditionalScore = Math.max(
-        distancePassed * scoreMultiplier * complexityMultiplier +
+        distancePassed *
+          scoreMultiplier.current *
+          complexityMultiplier *
           caveWidthMultiplier,
         0,
       );
