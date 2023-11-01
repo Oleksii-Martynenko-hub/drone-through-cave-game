@@ -44,6 +44,10 @@ const InputRangeWrapper = styled.div`
   input {
     grid-column: 1 / 3;
   }
+
+  @media (max-width: 500px) {
+    font-size: 22px;
+  }
 `;
 
 const PlayButton = styled(Button)`

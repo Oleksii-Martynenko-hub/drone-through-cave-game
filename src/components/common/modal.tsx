@@ -7,7 +7,8 @@ const ModalContent = styled.div`
   flex-direction: column;
   align-items: center;
   width: 70%;
-  height: 70%;
+  min-height: 70%;
+  max-height: calc(100% - 40px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,7 +16,7 @@ const ModalContent = styled.div`
 
 const StyledModal = styled.div`
   position: fixed;
-  inset: 0; /* inset sets all 4 values (top right bottom left) much like how we set padding, margin etc., */
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
@@ -24,7 +25,7 @@ const StyledModal = styled.div`
   transition: all 0.3s ease-in-out;
   overflow: hidden;
   z-index: 999;
-  padding: 40px 20px 20px;
+  padding: 20px 20px 20px;
 `;
 
 interface Props {

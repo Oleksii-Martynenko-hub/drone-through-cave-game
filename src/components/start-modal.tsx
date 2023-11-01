@@ -31,6 +31,7 @@ const StartModelContent = styled.div`
   background-color: #646464;
   padding: 26px;
   border-radius: 6px;
+  min-height: 480px;
 `;
 
 interface Props {
