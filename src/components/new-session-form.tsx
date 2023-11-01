@@ -111,6 +111,7 @@ function NewSessionForm({ initData, onSubmit }: Props) {
         placeholder="Player name"
         value={name}
         onChange={onChangePlayerName}
+        autoFocus
       />
 
       <InputRangeWrapper>
