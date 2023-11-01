@@ -54,22 +54,14 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
     [],
   );
 
-  const [motion, setMotion] = useState<DeviceMotionEvent | null>(null);
   const [acceleration, setAcceleration] =
     useState<DeviceMotionEventAcceleration | null>(null);
 
   useEffect(() => {
-    const motion = new DeviceMotionEvent('motion', {});
-    if (!motion) return;
-
-    setMotion(motion);
+    window.addEventListener('devicemotion', (event) => {
+      setAcceleration(event.acceleration);
+    });
   }, []);
-
-  useEffect(() => {
-    if (!motion) return;
-
-    setAcceleration(motion.acceleration);
-  }, [motion]);
 
   useEffect(() => {
     if (!isFinished) return;
