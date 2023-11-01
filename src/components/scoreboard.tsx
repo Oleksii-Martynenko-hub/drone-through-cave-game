@@ -6,18 +6,24 @@ interface Props {
   scoreboardData: GameSession[];
 }
 
-const StyledScoreBoard = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  text-indent: initial;
-  border-spacing: 0px;
-  overflow: hidden;
-  background: whitesmoke;
+const StyledScoreBoard = styled.div`
+  max-height: calc(100% - 234px);
+  overflow-y: auto;
   border-radius: 6px;
-
   margin-top: 40px;
+`;
+
+const ScoreTable = styled.table`
+  position: relative;
+  width: 100%;
+  text-indent: initial;
+  background: whitesmoke;
+  border-collapse: separate;
+  border-spacing: 0;
 
   th {
+    position: sticky;
+    top: 0;
     background: #e4e4e4;
     padding: 12px 20px;
   }
@@ -41,25 +47,27 @@ const StyledScoreBoard = styled.table`
 const Scoreboard = ({ scoreboardData }: Props) => {
   return (
     <StyledScoreBoard>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th style={{ textAlign: 'center' }}>Difficulty</th>
-          <th style={{ textAlign: 'end' }}>Score</th>
-        </tr>
-      </thead>
+      <ScoreTable>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th style={{ textAlign: 'center' }}>Difficulty</th>
+            <th style={{ textAlign: 'end' }}>Score</th>
+          </tr>
+        </thead>
 
-      <tbody>
-        {scoreboardData
-          .sort((a, b) => b.score - a.score)
-          .map((session) => (
-            <tr key={session.id}>
-              <td>{session.name}</td>
-              <td style={{ textAlign: 'center' }}>{session.difficulty}</td>
-              <td style={{ textAlign: 'end' }}>{session.score}</td>
-            </tr>
-          ))}
-      </tbody>
+        <tbody>
+          {scoreboardData
+            .sort((a, b) => b.score - a.score)
+            .map((session) => (
+              <tr key={session.id}>
+                <td>{session.name}</td>
+                <td style={{ textAlign: 'center' }}>{session.difficulty}</td>
+                <td style={{ textAlign: 'end' }}>{session.score}</td>
+              </tr>
+            ))}
+        </tbody>
+      </ScoreTable>
     </StyledScoreBoard>
   );
 };

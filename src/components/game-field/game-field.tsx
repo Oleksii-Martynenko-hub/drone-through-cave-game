@@ -53,6 +53,8 @@ const GameField = () => {
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
 
+  const [isFinishLineCrossed, setIsFinishLineCrossed] = useState(false);
+
   const droneSidesPoints = useDroneSidesPoints(dronePosition.x);
 
   const intersectionPoint = useIntersectionPoint(
@@ -114,26 +116,27 @@ const GameField = () => {
   useEffect(() => {
     if (!isRunning) return;
 
-    const intersectFinishedLine =
+    const isFinishLineCrossed =
       dronePosition.y >= (caveWallsData.length - 1) * WALL_HEIGHT;
-
-    if (intersectFinishedLine && caveWallsData.length) {
-      stop();
-
-      dispatch(gameLoopActions.setScore(score));
-      dispatch(gameLoopActions.setIsFinished(true));
-    }
-  }, [dronePosition, isRunning]);
+    setIsFinishLineCrossed(isFinishLineCrossed);
+  }, [dispatch, distance, dronePosition, isRunning, score]);
 
   useEffect(() => {
-    if (intersectionPoint) {
-      stop();
+    if (!isFinishLineCrossed && !intersectionPoint) return;
 
-      dispatch(gameLoopActions.setScore(score));
-      dispatch(gameLoopActions.setDistance(distance));
+    stop();
+
+    dispatch(gameLoopActions.setScore(score));
+    dispatch(gameLoopActions.setDistance(distance));
+
+    if (isFinishLineCrossed) {
+      dispatch(gameLoopActions.setIsFinished(true));
+    }
+
+    if (intersectionPoint) {
       dispatch(gameLoopActions.setIsDroneCrashed(true));
     }
-  }, [dispatch, intersectionPoint]);
+  }, [dispatch, isFinishLineCrossed, intersectionPoint]);
 
   const offsetY = dronePosition.y % WALL_HEIGHT;
 

@@ -44,6 +44,10 @@ const InputRangeWrapper = styled.div`
   input {
     grid-column: 1 / 3;
   }
+
+  @media (max-width: 500px) {
+    font-size: 22px;
+  }
 `;
 
 const PlayButton = styled(Button)`
@@ -82,9 +86,19 @@ function NewSessionForm({ initData, onSubmit }: Props) {
   }
 
   function onChangePlayerName(e: ChangeEvent<HTMLInputElement>) {
-    setName(e.target.value);
+    const value = e.target.value;
+    if (value.length > 20) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        name: 'Choose name till 20 symbols!',
+      }));
 
-    if (!e.target.value) {
+      return;
+    }
+
+    setName(value);
+
+    if (!value) {
       setValidationErrors((prev) => ({
         ...prev,
         name: "Please choose the player's name!",
@@ -111,6 +125,7 @@ function NewSessionForm({ initData, onSubmit }: Props) {
         placeholder="Player name"
         value={name}
         onChange={onChangePlayerName}
+        autoFocus
       />
 
       <InputRangeWrapper>

@@ -59,7 +59,9 @@ const EndModal = ({ onPlayAgainClick }: Props) => {
           )}`}
         </p>
 
-        <Button onClick={onPlayAgainClick}>Play again</Button>
+        <Button onClick={onPlayAgainClick} autoFocus>
+          Play again
+        </Button>
       </EndModelContent>
     </Modal>
   );
