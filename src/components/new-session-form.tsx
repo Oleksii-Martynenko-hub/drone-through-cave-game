@@ -82,9 +82,19 @@ function NewSessionForm({ initData, onSubmit }: Props) {
   }
 
   function onChangePlayerName(e: ChangeEvent<HTMLInputElement>) {
-    setName(e.target.value);
+    const value = e.target.value;
+    if (value.length > 20) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        name: 'Choose name till 20 symbols!',
+      }));
 
-    if (!e.target.value) {
+      return;
+    }
+
+    setName(value);
+
+    if (!value) {
       setValidationErrors((prev) => ({
         ...prev,
         name: "Please choose the player's name!",
