@@ -206,8 +206,7 @@ const GameField = () => {
           <div style={{ color: '#000' }}>
             <h3>orientation</h3>
             <span>
-              x: {Math.floor(orientation.x)}, y: {Math.floor(orientation.y)}, z:{' '}
-              {Math.floor(orientation.z)}
+              x: {Math.floor(orientation.x)}, y: {Math.floor(orientation.y)}
             </span>
           </div>
         )}
