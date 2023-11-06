@@ -123,7 +123,7 @@ const GameField = () => {
   }, []);
 
   useEffect(() => {
-    if (orientation) {
+    if (isRunning && orientation) {
       /**
        * orientation Y changes when you rotate device from side to side,
        * that's why it changes X (horizontal) speed of drone, and vice versa
