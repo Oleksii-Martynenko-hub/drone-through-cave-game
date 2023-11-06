@@ -25,7 +25,10 @@ import { useWindowSize } from '../common/hooks/useWindowSize';
 import { useAnimationFrame } from '../common/hooks/useAnimationFrame';
 import { useDroneSidesPoints } from '../common/hooks/useDroneSidesPoints';
 import { useIntersectionPoint } from '../common/hooks/useIntersectionPoint';
+import { useDeviceOrientation } from '../common/hooks/useDeviceOrientation';
 
+import Modal from '../common/modal';
+import Button from '../common/button';
 import Drone from './drone';
 import Walls from './walls';
 import Gauges from '../gauges';
@@ -55,6 +58,8 @@ const GameField = () => {
 
   const [isFinishLineCrossed, setIsFinishLineCrossed] = useState(false);
 
+  const [isShowRequestModal, setIsShowRequestModal] = useState(false);
+
   const droneSidesPoints = useDroneSidesPoints(dronePosition.x);
 
   const intersectionPoint = useIntersectionPoint(
@@ -68,6 +73,10 @@ const GameField = () => {
     dronePosition.y,
     droneSpeed,
     gameComplexity || 0,
+  );
+
+  const { handleDeviceMotionRequest, orientation } = useDeviceOrientation(
+    setIsShowRequestModal,
   );
 
   const keyHoldCallback =
@@ -138,6 +147,11 @@ const GameField = () => {
     }
   }, [dispatch, isFinishLineCrossed, intersectionPoint]);
 
+  const onClickRequestHandler = () => {
+    setIsShowRequestModal(false);
+    handleDeviceMotionRequest();
+  };
+
   const offsetY = dronePosition.y % WALL_HEIGHT;
 
   const wallsHeight = (caveWallsData.length - 1) * WALL_HEIGHT;
@@ -180,6 +194,19 @@ const GameField = () => {
 
   return (
     <StyledGameField>
+      <Modal isOpen={isShowRequestModal}>
+        <div
+          style={{
+            background: 'white',
+            padding: '20px',
+            borderRadius: '6px',
+          }}
+        >
+          <h3>Request device orientation permission</h3>
+          <Button onClick={onClickRequestHandler}>Request</Button>
+        </div>
+      </Modal>
+
       <StyledGaugesWrapper>
         <Gauges
           score={score}
