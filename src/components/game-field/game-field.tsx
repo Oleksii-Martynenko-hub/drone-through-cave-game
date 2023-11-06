@@ -193,9 +193,12 @@ const GameField = () => {
 
           alert('Promise permission: ' + permission);
 
-          callback?.();
+          if (permission == 'granted') {
+            setIsAllowMotion(true);
+            return;
+          }
 
-          if (permission == 'granted') setIsAllowMotion(true);
+          callback?.();
         }
       }
     } catch (err) {
