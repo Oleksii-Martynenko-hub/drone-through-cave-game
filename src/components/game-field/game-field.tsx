@@ -31,6 +31,7 @@ import Walls from './walls';
 import Gauges from '../gauges';
 import FinishLine from './finish-line';
 import IntersectionPoint from './intersection-point';
+import { WithoutNull } from 'src/types/common';
 
 const StyledGameField = styled.div`
   position: relative;
@@ -54,6 +55,11 @@ const GameField = () => {
   const { width: windowWidth, height: windowHeight } = useWindowSize();
 
   const [isFinishLineCrossed, setIsFinishLineCrossed] = useState(false);
+
+  const [isAllowMotion, setIsAllowMotion] = useState(false);
+  const [orientationOrigin, setOrientationOrigin] =
+    useState<WithoutNull<DeviceMotionEventAcceleration> | null>(null);
+  const [orientation, setOrientation] = useState({ x: 0, y: 0, z: 0 });
 
   const droneSidesPoints = useDroneSidesPoints(dronePosition.x);
 
@@ -107,8 +113,54 @@ const GameField = () => {
     dispatch(gameLoopActions.setLoopTime(delta));
   });
 
+  const handleDeviceMotionRequest = async () => {
+    const Event = DeviceOrientationEvent as unknown as {
+      permission: string;
+      requestPermission: () => Promise<PermissionState>;
+    };
+
+    if (Event.permission) {
+      alert('Event.permission: ' + Event.permission);
+      return;
+    }
+
+    Event.requestPermission()
+      .then((permission) => void alert('Promise permission: ' + permission))
+      .catch((reason) => void alert('reason: ' + reason));
+
+    return;
+
+    if (
+      typeof Event !== undefined &&
+      typeof Event.requestPermission === 'function'
+    ) {
+      try {
+        const permission = await Event.requestPermission();
+
+        setIsAllowMotion(true);
+
+        window.addEventListener(
+          'deviceorientation',
+          (event) => {
+            setOrientation({
+              z: event.alpha ?? 0,
+              x: event.beta ?? 0,
+              y: event.gamma ?? 0,
+            });
+          },
+          true,
+        );
+
+        alert(permission);
+      } catch (err) {
+        alert(err);
+      }
+    }
+  };
+
   useEffect(() => {
     if (!isRunning) {
+      handleDeviceMotionRequest();
       run();
     }
   }, []);
