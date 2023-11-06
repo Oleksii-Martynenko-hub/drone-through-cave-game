@@ -114,48 +114,52 @@ const GameField = () => {
   });
 
   const handleDeviceMotionRequest = async () => {
-    const Event = DeviceOrientationEvent as unknown as {
+    type MyEvent = {
       permission: string;
       requestPermission: () => Promise<PermissionState>;
     };
 
-    if (Event.permission) {
-      alert('Event.permission: ' + Event.permission);
+    if ((DeviceOrientationEvent as unknown as MyEvent).permission) {
+      alert(
+        'Event.permission: ' +
+          (DeviceOrientationEvent as unknown as MyEvent).permission,
+      );
       return;
     }
 
-    Event.requestPermission()
+    (DeviceOrientationEvent as unknown as MyEvent)
+      .requestPermission()
       .then((permission) => void alert('Promise permission: ' + permission))
       .catch((reason) => void alert('reason: ' + reason));
 
     return;
 
-    if (
-      typeof Event !== undefined &&
-      typeof Event.requestPermission === 'function'
-    ) {
-      try {
-        const permission = await Event.requestPermission();
+    // if (
+    //   typeof Event !== undefined &&
+    //   typeof Event.requestPermission === 'function'
+    // ) {
+    //   try {
+    //     const permission = await Event.requestPermission();
 
-        setIsAllowMotion(true);
+    //     setIsAllowMotion(true);
 
-        window.addEventListener(
-          'deviceorientation',
-          (event) => {
-            setOrientation({
-              z: event.alpha ?? 0,
-              x: event.beta ?? 0,
-              y: event.gamma ?? 0,
-            });
-          },
-          true,
-        );
+    //     window.addEventListener(
+    //       'deviceorientation',
+    //       (event) => {
+    //         setOrientation({
+    //           z: event.alpha ?? 0,
+    //           x: event.beta ?? 0,
+    //           y: event.gamma ?? 0,
+    //         });
+    //       },
+    //       true,
+    //     );
 
-        alert(permission);
-      } catch (err) {
-        alert(err);
-      }
-    }
+    //     alert(permission);
+    //   } catch (err) {
+    //     alert(err);
+    //   }
+    // }
   };
 
   useEffect(() => {
