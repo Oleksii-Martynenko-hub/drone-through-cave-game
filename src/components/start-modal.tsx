@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import styled from 'styled-components';
 
 import { GameSession, WithoutNull } from 'src/types/common';
@@ -54,15 +54,6 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
     [],
   );
 
-  const [acceleration, setAcceleration] =
-    useState<DeviceMotionEventAcceleration | null>(null);
-
-  useEffect(() => {
-    window.addEventListener('devicemotion', (event) => {
-      setAcceleration(event.acceleration);
-    });
-  }, []);
-
   useEffect(() => {
     if (!isFinished) return;
 
@@ -81,11 +72,6 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
 
   return (
     <Modal isOpen={isOpen}>
-      {!!acceleration && (
-        <p>
-          x: {acceleration.x}, y: {acceleration.y}, z: {acceleration.z}
-        </p>
-      )}
       <StartModelContent>
         <NewSessionForm
           initData={{ name, complexity }}
