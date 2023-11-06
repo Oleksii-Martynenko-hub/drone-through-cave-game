@@ -32,6 +32,8 @@ import Gauges from '../gauges';
 import FinishLine from './finish-line';
 import IntersectionPoint from './intersection-point';
 import { WithoutNull } from 'src/types/common';
+import Modal from '../common/modal';
+import Button from '../common/button';
 
 const StyledGameField = styled.div`
   position: relative;
@@ -57,6 +59,11 @@ const GameField = () => {
   const [isFinishLineCrossed, setIsFinishLineCrossed] = useState(false);
 
   const [isAllowMotion, setIsAllowMotion] = useState(false);
+  const [isNeedRequest, setIsNeedRequest] = useState(false);
+  const [
+    isShowDeviceOrientationRequestModal,
+    setIsShowDeviceOrientationRequestModal,
+  ] = useState(false);
   const [orientationOrigin, setOrientationOrigin] =
     useState<WithoutNull<DeviceMotionEventAcceleration> | null>(null);
   const [orientation, setOrientation] = useState({ x: 0, y: 0, z: 0 });
@@ -113,33 +120,6 @@ const GameField = () => {
     dispatch(gameLoopActions.setLoopTime(delta));
   });
 
-  const handleDeviceMotionRequest = async () => {
-    type DOEvent = {
-      requestPermission: () => Promise<PermissionState>;
-    };
-
-    try {
-      if (typeof (DeviceOrientationEvent as unknown as DOEvent) !== undefined) {
-        if (
-          typeof (DeviceOrientationEvent as unknown as DOEvent)
-            .requestPermission === 'function'
-        ) {
-          alert('requestPermission is function');
-
-          const permission = await (
-            DeviceOrientationEvent as unknown as DOEvent
-          ).requestPermission();
-
-          alert('Promise permission: ' + permission);
-
-          if (permission == 'granted') setIsAllowMotion(true);
-        }
-      }
-    } catch (err) {
-      alert('error: ' + err);
-    }
-  };
-
   useEffect(() => {
     const deviceOrientationEventHandler = (event: DeviceOrientationEvent) => {
       if (!isAllowMotion) setIsAllowMotion(true);
@@ -160,10 +140,16 @@ const GameField = () => {
 
   useEffect(() => {
     if (!isRunning) {
-      handleDeviceMotionRequest();
+      handleDeviceMotionRequest(() => void setIsNeedRequest(true));
       run();
     }
   }, []);
+
+  useEffect(() => {
+    if (isNeedRequest) {
+      setIsShowDeviceOrientationRequestModal(true);
+    }
+  }, [isNeedRequest]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -189,6 +175,39 @@ const GameField = () => {
       dispatch(gameLoopActions.setIsDroneCrashed(true));
     }
   }, [dispatch, isFinishLineCrossed, intersectionPoint]);
+
+  const handleDeviceMotionRequest = async (callback?: () => void) => {
+    type DOEvent = {
+      requestPermission: () => Promise<PermissionState>;
+    };
+
+    try {
+      if (typeof (DeviceOrientationEvent as unknown as DOEvent) !== undefined) {
+        if (
+          typeof (DeviceOrientationEvent as unknown as DOEvent)
+            .requestPermission === 'function'
+        ) {
+          const permission = await (
+            DeviceOrientationEvent as unknown as DOEvent
+          ).requestPermission();
+
+          alert('Promise permission: ' + permission);
+
+          callback?.();
+
+          if (permission == 'granted') setIsAllowMotion(true);
+        }
+      }
+    } catch (err) {
+      callback?.();
+      alert('error: ' + err);
+    }
+  };
+
+  const onClickRequestHandler = () => {
+    setIsShowDeviceOrientationRequestModal(false);
+    handleDeviceMotionRequest();
+  };
 
   const offsetY = dronePosition.y % WALL_HEIGHT;
 
@@ -249,6 +268,11 @@ const GameField = () => {
             </span>
           </div>
         )}
+
+        <Modal isOpen={isShowDeviceOrientationRequestModal}>
+          <h3>Request device orientation permission</h3>
+          <Button onClick={onClickRequestHandler}>Request</Button>
+        </Modal>
       </StyledGaugesWrapper>
 
       <svg
