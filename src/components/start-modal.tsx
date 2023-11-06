@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import styled from 'styled-components';
 
 import { GameSession, WithoutNull } from 'src/types/common';
@@ -55,14 +55,6 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
     [],
   );
 
-  const [acceleration, setAcceleration] = useState({ x: 0, y: 0, z: 0 });
-
-  const [orientation, setOrientation] = useState({ x: 0, y: 0, z: 0 });
-
-  const [isAllowMotion, setIsAllowMotion] = useState(false);
-
-  // useEffect(() => {}, []);
-
   useEffect(() => {
     if (!isFinished) return;
 
@@ -95,7 +87,7 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
       ).requestPermission === 'function'
     ) {
       try {
-        const permission = await(
+        const permission = await (
           DeviceOrientationEvent as unknown as {
             requestPermission: () => Promise<PermissionState>;
           }
@@ -135,24 +127,6 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
   };
   return (
     <Modal isOpen={isOpen}>
-      {isAllowMotion ? (
-        <div style={{ color: '#fff' }}>
-          <h3>orientation</h3>
-          <span>
-            x: {Math.floor(orientation.x)}, y: {Math.floor(orientation.y)}, z:{' '}
-            {Math.floor(orientation.z)}
-          </span>
-
-          <h3>acceleration</h3>
-          <span>
-            x: {Math.floor(acceleration.x)}, y: {Math.floor(acceleration.y)}, z:{' '}
-            {Math.floor(acceleration.z)}
-          </span>
-        </div>
-      ) : (
-        <Button onClick={handleDeviceMotionRequest}>Request</Button>
-      )}
-
       <StartModelContent>
         <NewSessionForm
           initData={{ name, complexity }}
