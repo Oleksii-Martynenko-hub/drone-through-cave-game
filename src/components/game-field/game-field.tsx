@@ -96,7 +96,7 @@ const GameField = () => {
         : 0;
 
       dispatch(
-        gameLoopActions.setDroneSpeed({ [axis]: trend * additionalSpeed }),
+        gameLoopActions.addDroneSpeed({ [axis]: trend * additionalSpeed }),
       );
     };
 
@@ -121,6 +121,17 @@ const GameField = () => {
       run();
     }
   }, []);
+
+  useEffect(() => {
+    if (orientation) {
+      dispatch(
+        gameLoopActions.setDroneSpeed({
+          x: Math.abs(orientation.x * 4),
+          y: Math.abs(orientation.y * 3),
+        }),
+      );
+    }
+  }, [orientation]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -194,6 +205,19 @@ const GameField = () => {
 
   return (
     <StyledGameField>
+      <Modal isOpen={isShowRequestModal}>
+        <div
+          style={{
+            background: 'white',
+            padding: '20px',
+            borderRadius: '6px',
+          }}
+        >
+          <h3>Request device orientation permission</h3>
+          <Button onClick={onClickRequestHandler}>Request</Button>
+        </div>
+      </Modal>
+
       <StyledGaugesWrapper>
         <Gauges
           score={score}
@@ -201,28 +225,6 @@ const GameField = () => {
           speedY={droneSpeed.y}
           speedX={droneSpeed.x}
         />
-
-        {orientation && (
-          <div style={{ color: '#000' }}>
-            <h3>orientation</h3>
-            <span>
-              x: {Math.floor(orientation.x)}, y: {Math.floor(orientation.y)}
-            </span>
-          </div>
-        )}
-
-        <Modal isOpen={isShowRequestModal}>
-          <div
-            style={{
-              background: 'white',
-              padding: '20px',
-              borderRadius: '6px',
-            }}
-          >
-            <h3>Request device orientation permission</h3>
-            <Button onClick={onClickRequestHandler}>Request</Button>
-          </div>
-        </Modal>
       </StyledGaugesWrapper>
 
       <svg

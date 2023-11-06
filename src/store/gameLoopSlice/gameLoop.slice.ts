@@ -63,7 +63,7 @@ export const gameLoopSlice = createSlice({
         state.dronePosition.y += newPositionY / limitVelocityMultiplier;
       }
     },
-    setDroneSpeed: (state, action: PayloadAction<Partial<Point>>) => {
+    addDroneSpeed: (state, action: PayloadAction<Partial<Point>>) => {
       const { x: prevX, y: prevY } = state.droneSpeed;
       const addX = action.payload.x ?? 0;
       const addY = action.payload.y ?? 0;
@@ -81,6 +81,9 @@ export const gameLoopSlice = createSlice({
       );
 
       state.droneSpeed = { y: newSpeedY, x: newSpeedX };
+    },
+    setDroneSpeed: (state, action: PayloadAction<Point>) => {
+      state.droneSpeed = { y: action.payload.y, x: action.payload.x };
     },
     setScore: (state, action: PayloadAction<number>) => {
       state.score = action.payload;
