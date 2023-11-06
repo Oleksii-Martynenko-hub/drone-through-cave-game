@@ -114,53 +114,49 @@ const GameField = () => {
   });
 
   const handleDeviceMotionRequest = async () => {
-    type MyEvent = {
-      permission: string;
+    type DOEvent = {
       requestPermission: () => Promise<PermissionState>;
     };
 
-    if ((DeviceOrientationEvent as unknown as MyEvent).permission) {
-      alert(
-        'Event.permission: ' +
-          (DeviceOrientationEvent as unknown as MyEvent).permission,
-      );
-      return;
+    try {
+      if (typeof (DeviceOrientationEvent as unknown as DOEvent) !== undefined) {
+        if (
+          typeof (DeviceOrientationEvent as unknown as DOEvent)
+            .requestPermission === 'function'
+        ) {
+          alert('requestPermission is function');
+
+          const permission = await (
+            DeviceOrientationEvent as unknown as DOEvent
+          ).requestPermission();
+
+          alert('Promise permission: ' + permission);
+
+          if (permission == 'granted') setIsAllowMotion(true);
+        }
+      }
+    } catch (err) {
+      alert('error: ' + err);
     }
-
-    (DeviceOrientationEvent as unknown as MyEvent)
-      .requestPermission()
-      .then((permission) => void alert('Promise permission: ' + permission))
-      .catch((reason) => void alert('reason: ' + reason));
-
-    return;
-
-    // if (
-    //   typeof Event !== undefined &&
-    //   typeof Event.requestPermission === 'function'
-    // ) {
-    //   try {
-    //     const permission = await Event.requestPermission();
-
-    //     setIsAllowMotion(true);
-
-    //     window.addEventListener(
-    //       'deviceorientation',
-    //       (event) => {
-    //         setOrientation({
-    //           z: event.alpha ?? 0,
-    //           x: event.beta ?? 0,
-    //           y: event.gamma ?? 0,
-    //         });
-    //       },
-    //       true,
-    //     );
-
-    //     alert(permission);
-    //   } catch (err) {
-    //     alert(err);
-    //   }
-    // }
   };
+
+  useEffect(() => {
+    const deviceOrientationEventHandler = (event: DeviceOrientationEvent) => {
+      if (!isAllowMotion) setIsAllowMotion(true);
+
+      setOrientation({
+        z: event.alpha ?? 0,
+        x: event.beta ?? 0,
+        y: event.gamma ?? 0,
+      });
+    };
+
+    window.addEventListener(
+      'deviceorientation',
+      deviceOrientationEventHandler,
+      true,
+    );
+  }, []);
 
   useEffect(() => {
     if (!isRunning) {
@@ -243,6 +239,16 @@ const GameField = () => {
           speedY={droneSpeed.y}
           speedX={droneSpeed.x}
         />
+
+        {isAllowMotion && (
+          <div style={{ color: '#000' }}>
+            <h3>orientation</h3>
+            <span>
+              x: {Math.floor(orientation.x)}, y: {Math.floor(orientation.y)}, z:{' '}
+              {Math.floor(orientation.z)}
+            </span>
+          </div>
+        )}
       </StyledGaugesWrapper>
 
       <svg
