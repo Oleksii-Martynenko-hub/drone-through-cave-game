@@ -55,12 +55,29 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
   );
 
   const [acceleration, setAcceleration] =
-    useState<DeviceMotionEventAcceleration | null>(null);
+    useState<DeviceMotionEventAcceleration>({ x: 0, y: 0, z: 0 });
+
+  const [orientation, setOrientation] = useState({ x: 0, y: 0, z: 0 });
 
   useEffect(() => {
     window.addEventListener('devicemotion', (event) => {
-      setAcceleration(event.acceleration);
+      setAcceleration({
+        z: event.accelerationIncludingGravity?.z ?? 0,
+        x: event.accelerationIncludingGravity?.x ?? 0,
+        y: event.accelerationIncludingGravity?.y ?? 0,
+      });
     });
+    window.addEventListener(
+      'deviceorientation',
+      (event) => {
+        setOrientation({
+          z: event.alpha ?? 0,
+          x: event.beta ?? 0,
+          y: event.gamma ?? 0,
+        });
+      },
+      true,
+    );
   }, []);
 
   useEffect(() => {
@@ -81,11 +98,17 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
 
   return (
     <Modal isOpen={isOpen}>
-      {!!acceleration && (
-        <p>
+      <div style={{ color: '#fff' }}>
+        <h3>orientation</h3>
+        <span>
+          x: {orientation.x}, y: {orientation.y}, z: {orientation.z}
+        </span>
+
+        <h3>acceleration</h3>
+        <span>
           x: {acceleration.x}, y: {acceleration.y}, z: {acceleration.z}
-        </p>
-      )}
+        </span>
+      </div>
       <StartModelContent>
         <NewSessionForm
           initData={{ name, complexity }}
