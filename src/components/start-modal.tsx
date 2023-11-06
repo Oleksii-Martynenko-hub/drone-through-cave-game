@@ -80,18 +80,26 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
   };
 
   const handleDeviceMotionRequest = async () => {
-    abstract class DeviceOrientationEvent {
-      constructor(readonly type: string) {}
+    // abstract class DeviceOrientationEvent {
+    //   constructor(readonly type: string) {}
 
-      static requestPermission: () => Promise<PermissionState>;
-    }
+    //   static requestPermission: () => Promise<PermissionState>;
+    // }
 
     if (
       typeof DeviceOrientationEvent !== undefined &&
-      typeof DeviceOrientationEvent.requestPermission === 'function'
+      typeof (
+        DeviceOrientationEvent as unknown as {
+          requestPermission: () => Promise<PermissionState>;
+        }
+      ).requestPermission === 'function'
     ) {
       try {
-        const permission = await DeviceOrientationEvent.requestPermission();
+        const permission = await(
+          DeviceOrientationEvent as unknown as {
+            requestPermission: () => Promise<PermissionState>;
+          }
+        ).requestPermission();
 
         setIsAllowMotion(true);
 
