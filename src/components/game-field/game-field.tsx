@@ -96,7 +96,7 @@ const GameField = () => {
         : 0;
 
       dispatch(
-        gameLoopActions.setDroneSpeed({ [axis]: trend * additionalSpeed }),
+        gameLoopActions.addDroneSpeed({ [axis]: trend * additionalSpeed }),
       );
     };
 
@@ -121,6 +121,21 @@ const GameField = () => {
       run();
     }
   }, []);
+
+  useEffect(() => {
+    if (isRunning && orientation) {
+      /**
+       * orientation Y changes when you rotate device from side to side,
+       * that's why it changes X (horizontal) speed of drone, and vice versa
+       */
+      dispatch(
+        gameLoopActions.setDroneSpeed({
+          x: Math.floor(orientation.y * 3),
+          y: Math.floor(orientation.x * 4),
+        }),
+      );
+    }
+  }, [orientation]);
 
   useEffect(() => {
     if (!isRunning) return;

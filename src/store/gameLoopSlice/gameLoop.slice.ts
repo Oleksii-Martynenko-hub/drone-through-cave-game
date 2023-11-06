@@ -63,7 +63,7 @@ export const gameLoopSlice = createSlice({
         state.dronePosition.y += newPositionY / limitVelocityMultiplier;
       }
     },
-    setDroneSpeed: (state, action: PayloadAction<Partial<Point>>) => {
+    addDroneSpeed: (state, action: PayloadAction<Partial<Point>>) => {
       const { x: prevX, y: prevY } = state.droneSpeed;
       const addX = action.payload.x ?? 0;
       const addY = action.payload.y ?? 0;
@@ -76,6 +76,21 @@ export const gameLoopSlice = createSlice({
 
       const newSpeedY = maxMin(
         addY + prevY,
+        DRONE_MAX_V_SPEED,
+        DRONE_MIN_V_SPEED,
+      );
+
+      state.droneSpeed = { y: newSpeedY, x: newSpeedX };
+    },
+    setDroneSpeed: (state, action: PayloadAction<Point>) => {
+      const newSpeedX = maxMin(
+        action.payload.x,
+        DRONE_MAX_H_SPEED,
+        DRONE_MIN_H_SPEED,
+      );
+
+      const newSpeedY = maxMin(
+        action.payload.y,
         DRONE_MAX_V_SPEED,
         DRONE_MIN_V_SPEED,
       );

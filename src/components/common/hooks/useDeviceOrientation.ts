@@ -19,6 +19,7 @@ export const useDeviceOrientation = (
 
       if (!orientationOrigin.current) {
         orientationOrigin.current = { x, y };
+
         return;
       }
 
