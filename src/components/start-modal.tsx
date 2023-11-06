@@ -26,6 +26,7 @@ import { useLocalStorage } from './common/hooks/useLocalStorage';
 import Modal from './common/modal';
 import Scoreboard from './scoreboard';
 import NewSessionForm from './new-session-form';
+import Button from './common/button';
 
 const StartModelContent = styled.div`
   background-color: #646464;
@@ -54,31 +55,13 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
     [],
   );
 
-  const [acceleration, setAcceleration] =
-    useState<DeviceMotionEventAcceleration>({ x: 0, y: 0, z: 0 });
+  const [acceleration, setAcceleration] = useState({ x: 0, y: 0, z: 0 });
 
   const [orientation, setOrientation] = useState({ x: 0, y: 0, z: 0 });
 
-  useEffect(() => {
-    window.addEventListener('devicemotion', (event) => {
-      setAcceleration({
-        z: event.accelerationIncludingGravity?.z ?? 0,
-        x: event.accelerationIncludingGravity?.x ?? 0,
-        y: event.accelerationIncludingGravity?.y ?? 0,
-      });
-    });
-    window.addEventListener(
-      'deviceorientation',
-      (event) => {
-        setOrientation({
-          z: event.alpha ?? 0,
-          x: event.beta ?? 0,
-          y: event.gamma ?? 0,
-        });
-      },
-      true,
-    );
-  }, []);
+  const [isAllowMotion, setIsAllowMotion] = useState(false);
+
+  // useEffect(() => {}, []);
 
   useEffect(() => {
     if (!isFinished) return;
@@ -96,19 +79,72 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
     handleClose();
   };
 
+  const handleDeviceMotionRequest = async () => {
+    abstract class DeviceOrientationEvent {
+      constructor(readonly type: string) {}
+
+      static requestPermission: () => Promise<PermissionState>;
+    }
+
+    if (
+      typeof DeviceOrientationEvent !== undefined &&
+      typeof DeviceOrientationEvent.requestPermission === 'function'
+    ) {
+      try {
+        const permission = await DeviceOrientationEvent.requestPermission();
+
+        setIsAllowMotion(true);
+
+        window.addEventListener(
+          'devicemotion',
+          (event) => {
+            setAcceleration({
+              z: event.accelerationIncludingGravity?.z ?? 0,
+              x: event.accelerationIncludingGravity?.x ?? 0,
+              y: event.accelerationIncludingGravity?.y ?? 0,
+            });
+          },
+          true,
+        );
+
+        window.addEventListener(
+          'deviceorientation',
+          (event) => {
+            setOrientation({
+              z: event.alpha ?? 0,
+              x: event.beta ?? 0,
+              y: event.gamma ?? 0,
+            });
+          },
+          true,
+        );
+
+        alert(permission);
+      } catch (err) {
+        alert(err);
+      }
+    }
+  };
   return (
     <Modal isOpen={isOpen}>
-      <div style={{ color: '#fff' }}>
-        <h3>orientation</h3>
-        <span>
-          x: {orientation.x}, y: {orientation.y}, z: {orientation.z}
-        </span>
+      {isAllowMotion ? (
+        <div style={{ color: '#fff' }}>
+          <h3>orientation</h3>
+          <span>
+            x: {Math.floor(orientation.x)}, y: {Math.floor(orientation.y)}, z:{' '}
+            {Math.floor(orientation.z)}
+          </span>
 
-        <h3>acceleration</h3>
-        <span>
-          x: {acceleration.x}, y: {acceleration.y}, z: {acceleration.z}
-        </span>
-      </div>
+          <h3>acceleration</h3>
+          <span>
+            x: {Math.floor(acceleration.x)}, y: {Math.floor(acceleration.y)}, z:{' '}
+            {Math.floor(acceleration.z)}
+          </span>
+        </div>
+      ) : (
+        <Button onClick={handleDeviceMotionRequest}>Request</Button>
+      )}
+
       <StartModelContent>
         <NewSessionForm
           initData={{ name, complexity }}
