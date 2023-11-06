@@ -7,38 +7,26 @@ type Orientation = WithoutNull<Omit<DeviceMotionEventAcceleration, 'z'>> | null;
 export const useDeviceOrientation = (
   setIsShowModal: Dispatch<SetStateAction<boolean>>,
 ) => {
-  const isPortrait = useRef(false);
   const orientationOrigin = useRef<Orientation>(null);
   const [orientation, setOrientation] = useState<Orientation>(null);
 
   useEffect(() => {
     handleDeviceMotionRequest(true);
 
-    isPortrait.current = window.matchMedia('(orientation: portrait)').matches;
-
     const deviceOrientationEventHandler = (event: DeviceOrientationEvent) => {
       const x = event.beta ?? 0;
       const y = event.gamma ?? 0;
 
       if (!orientationOrigin.current) {
-        orientationOrigin.current = isPortrait.current
-          ? { x, y }
-          : { x: y, y: x };
+        orientationOrigin.current = { x, y };
 
         return;
       }
 
-      setOrientation(
-        isPortrait.current
-          ? {
-              x: x - orientationOrigin.current.x,
-              y: y - orientationOrigin.current.y,
-            }
-          : {
-              x: y - orientationOrigin.current.y,
-              y: x - orientationOrigin.current.x,
-            },
-      );
+      setOrientation({
+        x: x - orientationOrigin.current.x,
+        y: y - orientationOrigin.current.y,
+      });
     };
 
     window.addEventListener(
