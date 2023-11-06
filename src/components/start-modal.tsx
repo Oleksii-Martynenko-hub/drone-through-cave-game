@@ -26,7 +26,6 @@ import { useLocalStorage } from './common/hooks/useLocalStorage';
 import Modal from './common/modal';
 import Scoreboard from './scoreboard';
 import NewSessionForm from './new-session-form';
-import Button from './common/button';
 
 const StartModelContent = styled.div`
   background-color: #646464;
@@ -71,60 +70,6 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
     handleClose();
   };
 
-  const handleDeviceMotionRequest = async () => {
-    // abstract class DeviceOrientationEvent {
-    //   constructor(readonly type: string) {}
-
-    //   static requestPermission: () => Promise<PermissionState>;
-    // }
-
-    if (
-      typeof DeviceOrientationEvent !== undefined &&
-      typeof (
-        DeviceOrientationEvent as unknown as {
-          requestPermission: () => Promise<PermissionState>;
-        }
-      ).requestPermission === 'function'
-    ) {
-      try {
-        const permission = await (
-          DeviceOrientationEvent as unknown as {
-            requestPermission: () => Promise<PermissionState>;
-          }
-        ).requestPermission();
-
-        setIsAllowMotion(true);
-
-        window.addEventListener(
-          'devicemotion',
-          (event) => {
-            setAcceleration({
-              z: event.accelerationIncludingGravity?.z ?? 0,
-              x: event.accelerationIncludingGravity?.x ?? 0,
-              y: event.accelerationIncludingGravity?.y ?? 0,
-            });
-          },
-          true,
-        );
-
-        window.addEventListener(
-          'deviceorientation',
-          (event) => {
-            setOrientation({
-              z: event.alpha ?? 0,
-              x: event.beta ?? 0,
-              y: event.gamma ?? 0,
-            });
-          },
-          true,
-        );
-
-        alert(permission);
-      } catch (err) {
-        alert(err);
-      }
-    }
-  };
   return (
     <Modal isOpen={isOpen}>
       <StartModelContent>
