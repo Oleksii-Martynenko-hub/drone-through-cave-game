@@ -25,15 +25,15 @@ import { useWindowSize } from '../common/hooks/useWindowSize';
 import { useAnimationFrame } from '../common/hooks/useAnimationFrame';
 import { useDroneSidesPoints } from '../common/hooks/useDroneSidesPoints';
 import { useIntersectionPoint } from '../common/hooks/useIntersectionPoint';
+import { useDeviceOrientation } from '../common/hooks/useDeviceOrientation';
 
+import Modal from '../common/modal';
+import Button from '../common/button';
 import Drone from './drone';
 import Walls from './walls';
 import Gauges from '../gauges';
 import FinishLine from './finish-line';
 import IntersectionPoint from './intersection-point';
-import { WithoutNull } from 'src/types/common';
-import Modal from '../common/modal';
-import Button from '../common/button';
 
 const StyledGameField = styled.div`
   position: relative;
@@ -58,15 +58,7 @@ const GameField = () => {
 
   const [isFinishLineCrossed, setIsFinishLineCrossed] = useState(false);
 
-  const [isAllowMotion, setIsAllowMotion] = useState(false);
-  const [isNeedRequest, setIsNeedRequest] = useState(false);
-  const [
-    isShowDeviceOrientationRequestModal,
-    setIsShowDeviceOrientationRequestModal,
-  ] = useState(false);
-  const [orientationOrigin, setOrientationOrigin] =
-    useState<WithoutNull<DeviceMotionEventAcceleration> | null>(null);
-  const [orientation, setOrientation] = useState({ x: 0, y: 0, z: 0 });
+  const [isShowRequestModal, setIsShowRequestModal] = useState(false);
 
   const droneSidesPoints = useDroneSidesPoints(dronePosition.x);
 
@@ -81,6 +73,10 @@ const GameField = () => {
     dronePosition.y,
     droneSpeed,
     gameComplexity || 0,
+  );
+
+  const { handleDeviceMotionRequest, orientation } = useDeviceOrientation(
+    setIsShowRequestModal,
   );
 
   const keyHoldCallback =
@@ -121,35 +117,10 @@ const GameField = () => {
   });
 
   useEffect(() => {
-    const deviceOrientationEventHandler = (event: DeviceOrientationEvent) => {
-      if (!isAllowMotion) setIsAllowMotion(true);
-
-      setOrientation({
-        z: event.alpha ?? 0,
-        x: event.beta ?? 0,
-        y: event.gamma ?? 0,
-      });
-    };
-
-    window.addEventListener(
-      'deviceorientation',
-      deviceOrientationEventHandler,
-      true,
-    );
-  }, []);
-
-  useEffect(() => {
     if (!isRunning) {
-      handleDeviceMotionRequest(() => void setIsNeedRequest(true));
       run();
     }
   }, []);
-
-  useEffect(() => {
-    if (isNeedRequest) {
-      setIsShowDeviceOrientationRequestModal(true);
-    }
-  }, [isNeedRequest]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -176,39 +147,8 @@ const GameField = () => {
     }
   }, [dispatch, isFinishLineCrossed, intersectionPoint]);
 
-  const handleDeviceMotionRequest = async (callback?: () => void) => {
-    type DOEvent = {
-      requestPermission: () => Promise<PermissionState>;
-    };
-
-    try {
-      if (typeof (DeviceOrientationEvent as unknown as DOEvent) !== undefined) {
-        if (
-          typeof (DeviceOrientationEvent as unknown as DOEvent)
-            .requestPermission === 'function'
-        ) {
-          const permission = await (
-            DeviceOrientationEvent as unknown as DOEvent
-          ).requestPermission();
-
-          alert('Promise permission: ' + permission);
-
-          if (permission == 'granted') {
-            setIsAllowMotion(true);
-            return;
-          }
-
-          callback?.();
-        }
-      }
-    } catch (err) {
-      callback?.();
-      alert('error: ' + err);
-    }
-  };
-
   const onClickRequestHandler = () => {
-    setIsShowDeviceOrientationRequestModal(false);
+    setIsShowRequestModal(false);
     handleDeviceMotionRequest();
   };
 
@@ -262,7 +202,7 @@ const GameField = () => {
           speedX={droneSpeed.x}
         />
 
-        {isAllowMotion && (
+        {orientation && (
           <div style={{ color: '#000' }}>
             <h3>orientation</h3>
             <span>
@@ -272,9 +212,17 @@ const GameField = () => {
           </div>
         )}
 
-        <Modal isOpen={isShowDeviceOrientationRequestModal}>
-          <h3>Request device orientation permission</h3>
-          <Button onClick={onClickRequestHandler}>Request</Button>
+        <Modal isOpen={isShowRequestModal}>
+          <div
+            style={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '6px',
+            }}
+          >
+            <h3>Request device orientation permission</h3>
+            <Button onClick={onClickRequestHandler}>Request</Button>
+          </div>
         </Modal>
       </StyledGaugesWrapper>
 
