@@ -1,11 +1,15 @@
 import { useLayoutEffect, useState } from 'react';
 
+import { AppendToKeys } from 'src/types/common';
+
 interface WindowSize {
   width: number;
   height: number;
 }
 
-export function useWindowSize(): WindowSize {
+type WindowOffset = Partial<AppendToKeys<WindowSize, 'Offset'>>;
+
+export function useWindowSize(windowOffset?: WindowOffset): WindowSize {
   const [windowSize, setWindowSize] = useState({
     width: 0,
     height: 0,
@@ -14,8 +18,8 @@ export function useWindowSize(): WindowSize {
   useLayoutEffect(() => {
     function handleResize() {
       setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: window.innerWidth + (windowOffset?.widthOffset || 0),
+        height: window.innerHeight + (windowOffset?.heightOffset || 0),
       });
     }
 

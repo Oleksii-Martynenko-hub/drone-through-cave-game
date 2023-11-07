@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import party from 'party-js';
 import styled from 'styled-components';
 
 import {
@@ -7,6 +8,8 @@ import {
   GAME_FIELD_MAX_WIDTH,
   GAME_FIELD_MIN_WIDTH,
 } from 'src/constants';
+
+import { maxMin } from 'src/utils/max-min';
 
 import { useAppDispatch, useAppSelector } from 'src/store/store';
 import {
@@ -36,6 +39,8 @@ import FinishLine from './finish-line';
 import IntersectionPoint from './intersection-point';
 
 const StyledGameField = styled.div`
+  display: flex;
+  justify-content: center;
   position: relative;
 `;
 
@@ -53,8 +58,6 @@ const GameField = () => {
   const droneSpeed = useAppSelector(selectDroneSpeed);
   const loopTime = useAppSelector(selectLoopTime);
   const maxDistance = useAppSelector(selectMaxDistance);
-
-  const { width: windowWidth, height: windowHeight } = useWindowSize();
 
   const [isFinishLineCrossed, setIsFinishLineCrossed] = useState(false);
 
@@ -74,6 +77,10 @@ const GameField = () => {
     droneSpeed,
     gameComplexity || 0,
   );
+
+  const { width: windowWidth, height: windowHeight } = useWindowSize({
+    heightOffset: 20,
+  });
 
   const { handleDeviceMotionRequest, orientation } = useDeviceOrientation(
     setIsShowRequestModal,
@@ -143,7 +150,7 @@ const GameField = () => {
     const isFinishLineCrossed =
       dronePosition.y >= (caveWallsData.length - 1) * WALL_HEIGHT;
     setIsFinishLineCrossed(isFinishLineCrossed);
-  }, [dispatch, distance, dronePosition, isRunning, score]);
+  }, [dispatch, distance, dronePosition, isRunning]);
 
   useEffect(() => {
     if (!isFinishLineCrossed && !intersectionPoint) return;
@@ -154,6 +161,23 @@ const GameField = () => {
     dispatch(gameLoopActions.setDistance(distance));
 
     if (isFinishLineCrossed) {
+      [-1, 1, 0].forEach((item, i) => {
+        const center = { x: windowWidth / 2, y: windowHeight / 2 };
+
+        setTimeout(() => {
+          const confettiCenter = new party.Circle(
+            center.x + item * 130,
+            center.y - 150,
+          );
+
+          party.confetti(confettiCenter, {
+            count: 50,
+            spread: 20,
+            size: 0.7,
+          });
+        }, 300 + i * 250);
+      });
+
       dispatch(gameLoopActions.setIsFinished(true));
     }
 
@@ -167,45 +191,18 @@ const GameField = () => {
     handleDeviceMotionRequest();
   };
 
-  const offsetY = dronePosition.y % WALL_HEIGHT;
-
-  const wallsHeight = (caveWallsData.length - 1) * WALL_HEIGHT;
-
-  const isWindowSmaller = windowWidth < GAME_FIELD_MIN_WIDTH;
-  const isWindowBigger = windowWidth > GAME_FIELD_MAX_WIDTH;
-
-  const calcWidth = isWindowSmaller
-    ? GAME_FIELD_MIN_WIDTH
-    : isWindowBigger
-    ? GAME_FIELD_MAX_WIDTH
-    : windowWidth;
-  const calcHeight = Math.min(windowHeight + 20, wallsHeight);
+  const calcWidth = maxMin(
+    windowWidth,
+    GAME_FIELD_MAX_WIDTH,
+    GAME_FIELD_MIN_WIDTH,
+  );
 
   const ratio = calcWidth / GAME_FIELD_MIN_WIDTH;
 
   const viewBoxW = GAME_FIELD_MIN_WIDTH / ratio;
-  const viewBoxH = calcHeight < 0 ? 0 : calcHeight / ratio;
+  const viewBoxH = windowHeight / ratio;
 
-  const [originViewBoxWidth] = useState(viewBoxW);
-
-  const calcViewBoxX = isWindowSmaller
-    ? 0
-    : (originViewBoxWidth - viewBoxW) / 2;
-
-  const slicedWalls = caveWallsData.slice(
-    Math.floor(dronePosition.y / WALL_HEIGHT),
-    calcHeight / WALL_HEIGHT + 1 + Math.floor(dronePosition.y / WALL_HEIGHT),
-  );
-
-  const lastVisibleWall = slicedWalls.at(-1) || [0, 0];
-
-  const isLastWallDrawn =
-    calcHeight / WALL_HEIGHT + 1 + Math.floor(dronePosition.y / WALL_HEIGHT) >=
-    caveWallsData.length;
-
-  const finishLineOffsetY = isLastWallDrawn
-    ? dronePosition.y + windowHeight + 20 - wallsHeight
-    : 0;
+  const calcViewBoxX = (GAME_FIELD_MIN_WIDTH - viewBoxW) / 2;
 
   return (
     <StyledGameField>
@@ -232,26 +229,23 @@ const GameField = () => {
       </StyledGaugesWrapper>
 
       <svg
-        style={{ background: 'white', margin: '0 auto' }}
+        style={{ background: 'white', margin: '0 auto', minWidth: '500px' }}
         width={calcWidth}
-        height={calcHeight < 0 ? 0 : calcHeight}
+        height={windowHeight}
         viewBox={`${calcViewBoxX} ${0} ${viewBoxW} ${viewBoxH}`}
         version="1.1"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {isLastWallDrawn && (
-          <FinishLine
-            lastVisibleWall={lastVisibleWall}
-            finishLineOffsetY={finishLineOffsetY}
-            calcHeight={calcHeight}
-          />
-        )}
+        <FinishLine
+          caveWallsData={caveWallsData}
+          dronePositionY={dronePosition.y}
+          windowHeight={windowHeight}
+        />
 
         <Walls
-          slicedWalls={slicedWalls}
-          lastVisibleWall={lastVisibleWall}
-          offsetY={offsetY}
-          calcHeight={calcHeight}
+          caveWallsData={caveWallsData}
+          dronePositionY={dronePosition.y}
+          windowHeight={windowHeight}
         />
 
         <Drone

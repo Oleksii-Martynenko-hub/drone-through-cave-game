@@ -1,36 +1,39 @@
 import { GAME_FIELD_MIN_WIDTH, WALL_HEIGHT } from 'src/constants';
 
 type Props = {
-  calcHeight: number;
-  slicedWalls: [number, number][];
-  lastVisibleWall: [number, number];
-  offsetY: number;
+  windowHeight: number;
+  caveWallsData: [number, number][];
+  dronePositionY: number;
 };
 
-const Walls = ({
-  calcHeight,
-  slicedWalls,
-  lastVisibleWall,
-  offsetY,
-}: Props) => {
+const Walls = ({ windowHeight, caveWallsData, dronePositionY }: Props) => {
+  const offsetY = dronePositionY % WALL_HEIGHT;
+
+  const visibleWalls = caveWallsData.slice(
+    Math.floor(dronePositionY / WALL_HEIGHT),
+    windowHeight / WALL_HEIGHT + 1 + Math.floor(dronePositionY / WALL_HEIGHT),
+  );
+
+  const lastVisibleWall = visibleWalls.at(-1) ?? [0, 0];
+
   return (
     <>
       <polygon
         fill="#646464"
-        points={`0,${calcHeight} 0,${0 - offsetY} ${slicedWalls
+        points={`0,${windowHeight} 0,${0 - offsetY} ${visibleWalls
           .map(
             ([left, _], i) =>
               `${GAME_FIELD_MIN_WIDTH / 2 + left},${i * WALL_HEIGHT - offsetY}`,
           )
           .join(' ')} ${
           GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[0]
-        },${calcHeight}`}
+        },${windowHeight}`}
       />
       <polygon
         fill="#646464"
-        points={`${GAME_FIELD_MIN_WIDTH},${calcHeight} ${GAME_FIELD_MIN_WIDTH},${
+        points={`${GAME_FIELD_MIN_WIDTH},${windowHeight} ${GAME_FIELD_MIN_WIDTH},${
           0 - offsetY
-        } ${slicedWalls
+        } ${visibleWalls
           .map(
             ([_, right], i) =>
               `${GAME_FIELD_MIN_WIDTH / 2 + right},${
@@ -39,7 +42,7 @@ const Walls = ({
           )
           .join(' ')} ${
           GAME_FIELD_MIN_WIDTH / 2 + lastVisibleWall[1]
-        },${calcHeight}`}
+        },${windowHeight}`}
       />
     </>
   );

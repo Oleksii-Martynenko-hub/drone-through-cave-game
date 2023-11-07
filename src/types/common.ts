@@ -2,6 +2,10 @@ export type WithoutNull<T extends object> = {
   [P in keyof T]: Exclude<T[P], null>;
 };
 
+export type AppendToKeys<T extends object, K extends string> = {
+  [P in keyof T & string as `${P}${K}`]: T[P];
+};
+
 export type Point = {
   x: number;
   y: number;
