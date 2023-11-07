@@ -1,27 +1,29 @@
 import { GAME_FIELD_MIN_WIDTH, WALL_HEIGHT } from 'src/constants';
 
 type Props = {
-  lastVisibleWall: [number, number];
   dronePositionY: number;
-  caveWallsDataLength: number;
+  caveWallsData: [number, number][];
   windowHeight: number;
 };
 
-const FinishLine = ({
-  lastVisibleWall,
-  dronePositionY,
-  caveWallsDataLength,
-  windowHeight,
-}: Props) => {
-  const wallsHeight = (caveWallsDataLength - 1) * WALL_HEIGHT;
+const FinishLine = ({ dronePositionY, caveWallsData, windowHeight }: Props) => {
+  const wallsHeight = (caveWallsData.length - 1) * WALL_HEIGHT;
 
   const isLastWallDrawn =
-      windowHeight / WALL_HEIGHT + 1 + Math.floor(dronePositionY / WALL_HEIGHT) >=
-    caveWallsDataLength;
+    windowHeight / WALL_HEIGHT + 1 + Math.floor(dronePositionY / WALL_HEIGHT) >=
+    caveWallsData.length;
 
   const finishLineOffsetY = isLastWallDrawn
     ? dronePositionY + windowHeight - wallsHeight
     : 0;
+
+  const lastVisibleWallIndex =
+    windowHeight / WALL_HEIGHT + Math.floor(dronePositionY / WALL_HEIGHT);
+
+  const lastVisibleWall = caveWallsData.slice(
+    lastVisibleWallIndex,
+    lastVisibleWallIndex + 1,
+  )[0] || [0, 0];
 
   return isLastWallDrawn ? (
     <line
