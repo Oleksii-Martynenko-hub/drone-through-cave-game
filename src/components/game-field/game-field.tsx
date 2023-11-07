@@ -55,8 +55,6 @@ const GameField = () => {
   const loopTime = useAppSelector(selectLoopTime);
   const maxDistance = useAppSelector(selectMaxDistance);
 
-  const { width: windowWidth, height: windowHeight } = useWindowSize();
-
   const [isFinishLineCrossed, setIsFinishLineCrossed] = useState(false);
 
   const [isShowRequestModal, setIsShowRequestModal] = useState(false);
@@ -168,7 +166,9 @@ const GameField = () => {
     handleDeviceMotionRequest();
   };
 
-
+  const { width: windowWidth, height: windowHeight } = useWindowSize({
+    heightOffset: 20,
+  });
 
   const calcWidth = maxMin(
     windowWidth,
