@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import party from 'party-js';
 import styled from 'styled-components';
 
 import {
@@ -76,6 +77,10 @@ const GameField = () => {
     droneSpeed,
     gameComplexity || 0,
   );
+
+  const { width: windowWidth, height: windowHeight } = useWindowSize({
+    heightOffset: 20,
+  });
 
   const { handleDeviceMotionRequest, orientation } = useDeviceOrientation(
     setIsShowRequestModal,
@@ -156,6 +161,23 @@ const GameField = () => {
     dispatch(gameLoopActions.setDistance(distance));
 
     if (isFinishLineCrossed) {
+      [-1, 1, 0].forEach((item, i) => {
+        const center = { x: windowWidth / 2, y: windowHeight / 2 };
+
+        setTimeout(() => {
+          const confettiCenter = new party.Circle(
+            center.x + item * 130,
+            center.y - 150,
+          );
+
+          party.confetti(confettiCenter, {
+            count: 50,
+            spread: 20,
+            size: 0.7,
+          });
+        }, 300 + i * 250);
+      });
+
       dispatch(gameLoopActions.setIsFinished(true));
     }
 
@@ -168,10 +190,6 @@ const GameField = () => {
     setIsShowRequestModal(false);
     handleDeviceMotionRequest();
   };
-
-  const { width: windowWidth, height: windowHeight } = useWindowSize({
-    heightOffset: 20,
-  });
 
   const calcWidth = maxMin(
     windowWidth,
