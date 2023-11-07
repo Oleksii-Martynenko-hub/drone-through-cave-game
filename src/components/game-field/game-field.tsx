@@ -34,6 +34,7 @@ import Walls from './walls';
 import Gauges from '../gauges';
 import FinishLine from './finish-line';
 import IntersectionPoint from './intersection-point';
+import { maxMin } from 'src/utils/max-min';
 
 const StyledGameField = styled.div`
   position: relative;
@@ -167,45 +168,32 @@ const GameField = () => {
     handleDeviceMotionRequest();
   };
 
-  const offsetY = dronePosition.y % WALL_HEIGHT;
 
-  const wallsHeight = (caveWallsData.length - 1) * WALL_HEIGHT;
 
-  const isWindowSmaller = windowWidth < GAME_FIELD_MIN_WIDTH;
-  const isWindowBigger = windowWidth > GAME_FIELD_MAX_WIDTH;
-
-  const calcWidth = isWindowSmaller
-    ? GAME_FIELD_MIN_WIDTH
-    : isWindowBigger
-    ? GAME_FIELD_MAX_WIDTH
-    : windowWidth;
-  const calcHeight = Math.min(windowHeight + 20, wallsHeight);
+  const calcWidth = maxMin(
+    windowWidth,
+    GAME_FIELD_MAX_WIDTH,
+    GAME_FIELD_MIN_WIDTH,
+  );
 
   const ratio = calcWidth / GAME_FIELD_MIN_WIDTH;
 
   const viewBoxW = GAME_FIELD_MIN_WIDTH / ratio;
-  const viewBoxH = calcHeight < 0 ? 0 : calcHeight / ratio;
+  const viewBoxH = windowHeight < 0 ? 0 : windowHeight / ratio;
 
   const [originViewBoxWidth] = useState(viewBoxW);
 
-  const calcViewBoxX = isWindowSmaller
-    ? 0
-    : (originViewBoxWidth - viewBoxW) / 2;
+  const calcViewBoxX =
+    windowWidth < GAME_FIELD_MIN_WIDTH
+      ? 0
+      : (originViewBoxWidth - viewBoxW) / 2;
 
-  const slicedWalls = caveWallsData.slice(
+  const visibleWalls = caveWallsData.slice(
     Math.floor(dronePosition.y / WALL_HEIGHT),
-    calcHeight / WALL_HEIGHT + 1 + Math.floor(dronePosition.y / WALL_HEIGHT),
+    windowHeight / WALL_HEIGHT + 1 + Math.floor(dronePosition.y / WALL_HEIGHT),
   );
 
-  const lastVisibleWall = slicedWalls.at(-1) || [0, 0];
-
-  const isLastWallDrawn =
-    calcHeight / WALL_HEIGHT + 1 + Math.floor(dronePosition.y / WALL_HEIGHT) >=
-    caveWallsData.length;
-
-  const finishLineOffsetY = isLastWallDrawn
-    ? dronePosition.y + windowHeight + 20 - wallsHeight
-    : 0;
+  const lastVisibleWall = visibleWalls.at(-1) || [0, 0];
 
   return (
     <StyledGameField>
@@ -234,24 +222,23 @@ const GameField = () => {
       <svg
         style={{ background: 'white', margin: '0 auto' }}
         width={calcWidth}
-        height={calcHeight < 0 ? 0 : calcHeight}
+        height={windowHeight}
         viewBox={`${calcViewBoxX} ${0} ${viewBoxW} ${viewBoxH}`}
         version="1.1"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {isLastWallDrawn && (
-          <FinishLine
-            lastVisibleWall={lastVisibleWall}
-            finishLineOffsetY={finishLineOffsetY}
-            calcHeight={calcHeight}
-          />
-        )}
+        <FinishLine
+          lastVisibleWall={lastVisibleWall}
+          caveWallsDataLength={caveWallsData.length}
+          dronePositionY={dronePosition.y}
+          windowHeight={windowHeight}
+        />
 
         <Walls
-          slicedWalls={slicedWalls}
+          slicedWalls={visibleWalls}
           lastVisibleWall={lastVisibleWall}
-          offsetY={offsetY}
-          calcHeight={calcHeight}
+          offsetY={dronePosition.y % WALL_HEIGHT}
+          calcHeight={windowHeight}
         />
 
         <Drone
