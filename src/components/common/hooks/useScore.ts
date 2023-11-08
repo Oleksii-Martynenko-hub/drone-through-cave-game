@@ -61,7 +61,7 @@ export const useScoreBetter = (
     ) {
       const { positions: previousSides } = previousPassedSides.current!;
 
-      const distancePassed = getAverageLengthOfWall(previousSides, passedSides); // TODO refactor length calc
+      const distancePassed = getAverageLengthOfWall(previousSides, passedSides);
 
       distance.current += distancePassed;
 
