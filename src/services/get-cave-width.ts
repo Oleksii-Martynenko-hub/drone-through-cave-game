@@ -2,59 +2,61 @@ import { getDistance } from 'src/utils/get-distance';
 import { getTriangleHeight } from 'src/utils/get-triangle-height';
 
 export const getCaveWidth = (
-  caveWallsData: [number, number][],
-  currentWallIndex: number,
+  caveSidesData: [number, number][],
+  passedSidesIndex: number,
 ) => {
-  const lastPassedWall = caveWallsData.slice(
-    currentWallIndex,
-    currentWallIndex + 1,
+  const passedSides = caveSidesData.slice(
+    passedSidesIndex,
+    passedSidesIndex + 1,
   )?.[0];
 
-  const walls = caveWallsData.slice(
-    Math.max(0, currentWallIndex - 3),
-    currentWallIndex + 4,
+  // get passed sides, 3 above and 3 below
+  const nearestSides = caveSidesData.slice(
+    Math.max(0, passedSidesIndex - 3),
+    passedSidesIndex + 4,
   );
 
-  const l = walls.map(([l, r]) => l);
-  const r = walls.map(([l, r]) => r);
+  const leftSides = nearestSides.map(([l, _]) => l); // only left side positions
+  const rightSides = nearestSides.map(([_, r]) => r); // only right side positions
 
-  const caveWidth = lastPassedWall.map((px, s) => {
-    const side = s === 0 ? r : l;
-    const nearestPointsAbove = side.slice(0, 3).map((x, j) => {
-      return {
-        d: getDistance({ x: px, y: j }, { x, y: -30 + j * 10 }),
-        p: { x, y: -30 + j * 10 },
-      };
-    });
-    const nearestPointsBelow = side.slice(3, 7).map((x, j) => {
-      return {
-        d: getDistance({ x: px, y: j }, { x, y: j * 10 }),
-        p: { x, y: j * 10 },
-      };
-    });
+  const caveWidths = passedSides.map((px, sideIndex) => {
+    /** sideIndex == 0 it left side of passed sides,
+     * means we get nearest right sides as opposite and vice versa */
+    const oppositeSides = sideIndex === 0 ? rightSides : leftSides;
 
-    const sortedNearestPoints = nearestPointsAbove
-      .concat(nearestPointsBelow)
-      .sort((a, b) => {
-        return a.d - b.d;
-      });
+    // calculate distance to all opposite points to find 2 nearest
+    const nearestOppositePoints = oppositeSides
+      .map((x, i) => {
+        const oppositePoint = { x, y: -30 + i * 10 };
+        return {
+          distance: getDistance({ x: px, y: 0 }, oppositePoint),
+          point: oppositePoint,
+        };
+      })
+      .sort((a, b) => a.distance - b.distance);
 
-    if (sortedNearestPoints.length >= 2) {
-      const sideA = getDistance(
-        sortedNearestPoints[0].p,
-        sortedNearestPoints[1].p,
-      );
-      return getTriangleHeight(
-        sideA,
-        sortedNearestPoints[0].d,
-        sortedNearestPoints[1].d,
-      );
+    if (nearestOppositePoints.length < 2) {
+      // if not enough nearest points return ~max width of cave
+      return 200;
     }
 
-    return 200;
+    // get distance between two nearest points
+    const sideA = getDistance(
+      nearestOppositePoints[0].point,
+      nearestOppositePoints[1].point,
+    );
+
+    /* and get height of triangle which forms
+     * from passedPoint and two nearest points
+     * this height is width of cave  */
+    return getTriangleHeight(
+      sideA,
+      nearestOppositePoints[0].distance,
+      nearestOppositePoints[1].distance,
+    );
   });
 
-  const midCaveWidth = (caveWidth[0] + caveWidth[1]) / 2;
+  const mediumCaveWidth = (caveWidths[0] + caveWidths[1]) / 2;
 
-  return midCaveWidth;
+  return mediumCaveWidth;
 };

@@ -27,38 +27,41 @@ export const useScore = (
 };
 
 export const useScoreBetter = (
-  caveWallsData: [number, number][],
+  caveSidesData: [number, number][],
   dronePositionY: number,
   droneSpeed: Point,
   complexity: number,
 ) => {
   const [score, setScore] = useState(0);
   const scoreMultiplier = useRef(0.01);
-  const previousWall = useRef<{
+  const previousPassedSides = useRef<{
     index: number;
     positions: [number, number];
   } | null>(null);
   const distance = useRef(0);
 
   useEffect(() => {
-    const currentWallIndex = Math.floor(dronePositionY / WALL_HEIGHT);
-    const lastPassedWall = caveWallsData.slice(
-      currentWallIndex,
-      currentWallIndex + 1,
+    const passedSidesIndex = Math.floor(dronePositionY / WALL_HEIGHT);
+    const passedSides = caveSidesData.slice(
+      passedSidesIndex,
+      passedSidesIndex + 1,
     )?.[0];
 
-    if (!previousWall.current && currentWallIndex < 1) {
-      previousWall.current = {
-        index: currentWallIndex,
-        positions: lastPassedWall,
+    if (!previousPassedSides.current && passedSidesIndex < 1) {
+      previousPassedSides.current = {
+        index: passedSidesIndex,
+        positions: passedSides,
       };
       return;
     }
 
-    if (lastPassedWall && currentWallIndex !== previousWall.current?.index) {
-      const { positions: wall } = previousWall.current!;
+    if (
+      passedSides &&
+      passedSidesIndex !== previousPassedSides.current?.index
+    ) {
+      const { positions: previousSides } = previousPassedSides.current!;
 
-      const distancePassed = getAverageLengthOfWall(wall, lastPassedWall);
+      const distancePassed = getAverageLengthOfWall(previousSides, passedSides); // TODO refactor length calc
 
       distance.current += distancePassed;
 
@@ -67,8 +70,8 @@ export const useScoreBetter = (
         100,
       );
 
-      const midCaveWidth = getCaveWidth(caveWallsData, currentWallIndex);
-      const caveWidthMultiplier = (200 - midCaveWidth) / 10;
+      const mediumCaveWidth = getCaveWidth(caveSidesData, passedSidesIndex);
+      const caveWidthMultiplier = (200 - mediumCaveWidth) / 10;
 
       const complexityMultiplier = droneVelocity / 2 + complexity * 3;
       const calculatedAdditionalScore = Math.max(
@@ -81,9 +84,9 @@ export const useScoreBetter = (
 
       setScore((prev) => Math.round(prev + calculatedAdditionalScore));
 
-      previousWall.current = {
-        index: currentWallIndex,
-        positions: lastPassedWall,
+      previousPassedSides.current = {
+        index: passedSidesIndex,
+        positions: passedSides,
       };
     }
   }, [dronePositionY]);
