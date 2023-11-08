@@ -10,6 +10,9 @@ export const getCaveWidth = (
     passedSidesIndex + 1,
   )?.[0];
 
+  const passedSidesCenterX =
+    passedSides[0] + (passedSides[1] - passedSides[0]) / 2;
+
   // get passed sides, 3 above and 3 below
   const nearestSides = caveSidesData.slice(
     Math.max(0, passedSidesIndex - 3),
@@ -19,7 +22,7 @@ export const getCaveWidth = (
   const leftSides = nearestSides.map(([l, _]) => l); // only left side positions
   const rightSides = nearestSides.map(([_, r]) => r); // only right side positions
 
-  const caveWidths = passedSides.map((px, sideIndex) => {
+  const caveWidthsFromCenter = passedSides.map((px, sideIndex) => {
     /** sideIndex == 0 it left side of passed sides,
      * means we get nearest right sides as opposite and vice versa */
     const oppositeSides = sideIndex === 0 ? rightSides : leftSides;
@@ -29,7 +32,7 @@ export const getCaveWidth = (
       .map((x, i) => {
         const oppositePoint = { x, y: -30 + i * 10 };
         return {
-          distance: getDistance({ x: px, y: 0 }, oppositePoint),
+          distance: getDistance({ x: passedSidesCenterX, y: 0 }, oppositePoint),
           point: oppositePoint,
         };
       })
@@ -56,7 +59,7 @@ export const getCaveWidth = (
     );
   });
 
-  const mediumCaveWidth = (caveWidths[0] + caveWidths[1]) / 2;
+  const caveWidth = caveWidthsFromCenter[0] + caveWidthsFromCenter[1];
 
-  return mediumCaveWidth;
+  return caveWidth;
 };

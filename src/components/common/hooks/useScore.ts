@@ -70,8 +70,8 @@ export const useScoreBetter = (
         100,
       );
 
-      const mediumCaveWidth = getCaveWidth(caveSidesData, passedSidesIndex);
-      const caveWidthMultiplier = (200 - mediumCaveWidth) / 10;
+      const caveWidth = getCaveWidth(caveSidesData, passedSidesIndex);
+      const caveWidthMultiplier = (200 - caveWidth) / 10;
 
       const complexityMultiplier = droneVelocity / 2 + complexity * 3;
       const calculatedAdditionalScore = Math.max(
