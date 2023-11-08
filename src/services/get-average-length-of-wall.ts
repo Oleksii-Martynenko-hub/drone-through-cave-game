@@ -1,20 +1,18 @@
 import { getDistance } from 'src/utils/get-distance';
 
 export const getAverageLengthOfWall = (
-  wall: [number, number],
-  lastWall: [number, number],
+  previousSides: [number, number],
+  currentSides: [number, number],
 ) => {
-  const [left, right] = wall;
-  const [lastLeft, lastRight] = lastWall;
+  const [left, right] = previousSides;
+  const [currentLeft, currentRight] = currentSides;
+  const centerTop = left + (left - right) / 2;
+  const centerBottom = currentLeft + (currentLeft - currentRight) / 2;
 
-  const distancePassedLeft = getDistance(
-    { x: left, y: 0 },
-    { x: lastLeft, y: 10 },
-  );
-  const distancePassedRight = getDistance(
-    { x: right, y: 0 },
-    { x: lastRight, y: 10 },
+  const distancePassed = getDistance(
+    { x: centerTop, y: 0 },
+    { x: centerBottom, y: 10 },
   );
 
-  return (distancePassedLeft + distancePassedRight) / 2;
+  return distancePassed;
 };
