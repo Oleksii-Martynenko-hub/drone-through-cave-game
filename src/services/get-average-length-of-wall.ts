@@ -6,8 +6,8 @@ export const getAverageLengthOfWall = (
 ) => {
   const [left, right] = previousSides;
   const [currentLeft, currentRight] = currentSides;
-  const centerTop = left - right;
-  const centerBottom = currentLeft - currentRight;
+  const centerTop = left + (left - right) / 2;
+  const centerBottom = currentLeft + (currentLeft - currentRight) / 2;
 
   const distancePassed = getDistance(
     { x: centerTop, y: 0 },
