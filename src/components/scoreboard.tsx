@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { GameSession } from 'src/types/common';
 
-import { formatTime } from 'src/services/formatTime';
+import { formatTime } from 'src/services/format-time';
 
 interface Props {
   scoreboardData: GameSession[];

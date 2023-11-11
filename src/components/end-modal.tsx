@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import { formatTime } from 'src/services/formatTime';
+import { formatTime } from 'src/services/format-time';
 
 import { useAppSelector } from 'src/store/store';
 import {
