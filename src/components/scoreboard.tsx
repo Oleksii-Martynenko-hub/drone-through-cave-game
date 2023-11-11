@@ -1,7 +1,9 @@
+import { MouseEvent } from 'react';
 import styled from 'styled-components';
 
 import { GameSession } from 'src/types/common';
-import { MouseEvent } from 'react';
+
+import { formatTime } from 'src/services/formatTime';
 
 interface Props {
   scoreboardData: GameSession[];
@@ -103,15 +105,9 @@ const Scoreboard = ({ scoreboardData }: Props) => {
                   <td colSpan={3}>
                     <span>
                       level: {difficulty}
-                      {rest.distance && ` / ${rest.distance.toFixed(2)}m`}
-                      {rest.time &&
-                        ` / ${Math.floor(rest.time / 60000)
-                          .toString()
-                          .padStart(2, '0')}:${Math.floor(
-                          (rest.time % 60000) / 1000,
-                        )
-                          .toString()
-                          .padStart(2, '0')}`}
+                      {rest.distance !== undefined &&
+                        ` / ${rest.distance.toFixed(2)}m`}
+                      {rest.time !== undefined && ` / ${formatTime(rest.time)}`}
                     </span>
                   </td>
                 </tr>
