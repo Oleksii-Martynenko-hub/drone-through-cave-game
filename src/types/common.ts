@@ -16,6 +16,8 @@ export type GameSession = {
   name: string;
   difficulty: number;
   score: number;
+  distance?: number;
+  time?: number;
 };
 
 export type APIStatus = 'not loaded' | 'loading' | 'loaded' | 'error';

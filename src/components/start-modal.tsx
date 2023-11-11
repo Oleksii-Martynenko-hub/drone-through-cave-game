@@ -17,7 +17,9 @@ import {
   selectName,
 } from 'src/store/gameSessionSlice/gameSession.slice';
 import {
+  selectDistance,
   selectIsFinished,
+  selectLoopTime,
   selectScore,
 } from 'src/store/gameLoopSlice/gameLoop.slice';
 
@@ -46,6 +48,8 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
   const name = useAppSelector(selectName);
   const complexity = useAppSelector(selectComplexity);
   const score = useAppSelector(selectScore);
+  const distance = useAppSelector(selectDistance);
+  const time = useAppSelector(selectLoopTime);
 
   const isFinished = useAppSelector(selectIsFinished);
 
@@ -58,7 +62,14 @@ const StartModal = ({ isOpen, handleClose }: Props) => {
     if (!isFinished) return;
 
     if (id && name && complexity !== null) {
-      const newSession = { id, name, difficulty: complexity, score };
+      const newSession = {
+        id,
+        name,
+        difficulty: complexity,
+        score,
+        distance,
+        time,
+      };
       setScoreBoardData((prev) => [...prev, newSession]);
     }
   }, [isFinished]);
