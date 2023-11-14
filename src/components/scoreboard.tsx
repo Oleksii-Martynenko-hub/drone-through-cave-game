@@ -1,4 +1,4 @@
-import { MouseEvent } from 'react';
+import { Fragment, MouseEvent } from 'react';
 import styled from 'styled-components';
 
 import { GameSession } from 'src/types/common';
@@ -89,8 +89,8 @@ const Scoreboard = ({ scoreboardData }: Props) => {
           {scoreboardData
             .sort((a, b) => b.score - a.score)
             .map(({ id, name, difficulty, score, ...rest }) => (
-              <>
-                <tr key={id}>
+              <Fragment key={id}>
+                <tr>
                   <td>{name}</td>
                   <td style={{ textAlign: 'end' }}>{score}</td>
                   <td
@@ -101,7 +101,7 @@ const Scoreboard = ({ scoreboardData }: Props) => {
                     ...
                   </td>
                 </tr>
-                <tr key={id + '-details'} className="details">
+                <tr className="details">
                   <td colSpan={3}>
                     <span>
                       level: {difficulty}
@@ -111,7 +111,7 @@ const Scoreboard = ({ scoreboardData }: Props) => {
                     </span>
                   </td>
                 </tr>
-              </>
+              </Fragment>
             ))}
         </tbody>
       </ScoreTable>
