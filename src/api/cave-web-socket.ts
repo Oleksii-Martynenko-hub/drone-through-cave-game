@@ -91,12 +91,9 @@ export class CaveWebSocket {
   }
 
   private checkFormatSaveWall(data: string) {
-    const wallPosition = data.split(',').map((p) => +p);
+    const wallPosition = data.split(',').map((p) => parseInt(p));
 
-    if (
-      wallPosition.length === 2 &&
-      wallPosition.every((n) => typeof n === 'number')
-    ) {
+    if (wallPosition.length === 2 && wallPosition.every((n) => !isNaN(n))) {
       return wallPosition;
     }
   }
