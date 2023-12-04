@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+import { formatTime } from 'src/services/format-time';
+
 import { useAppSelector } from 'src/store/store';
 import {
   selectComplexity,
@@ -52,12 +54,7 @@ const EndModal = ({ onPlayAgainClick }: Props) => {
           progress: {distance.toFixed(2)}m{' '}
           {!!maxDistance && `/ ${maxDistance.toFixed(2)}m`}
         </p>
-        <p>
-          time:{' '}
-          {`${Math.floor(loopTime / 60000)}:${Math.floor(
-            (loopTime % 60000) / 1000,
-          )}`}
-        </p>
+        <p>time: {`${formatTime(loopTime)}`}</p>
 
         <Button onClick={onPlayAgainClick} autoFocus>
           Play again

@@ -34,7 +34,9 @@ export function App() {
     <StyledApp>
       <GlobalStyle />
 
-      <ErrorBoundary fallback={<p>Something went wrong</p>}>
+      <ErrorBoundary
+        fallback={<p>Something went wrong, please try to reload the page!</p>}
+      >
         <Game />
 
         {isEnoughWallsLoaded && <GameField />}

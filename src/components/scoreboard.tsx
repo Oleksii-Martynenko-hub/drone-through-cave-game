@@ -1,6 +1,9 @@
+import { Fragment, MouseEvent } from 'react';
 import styled from 'styled-components';
 
 import { GameSession } from 'src/types/common';
+
+import { formatTime } from 'src/services/format-time';
 
 interface Props {
   scoreboardData: GameSession[];
@@ -24,6 +27,7 @@ const ScoreTable = styled.table`
   th {
     position: sticky;
     top: 0;
+    font-size: 20px;
     background: #e4e4e4;
     padding: 12px 20px;
   }
@@ -42,29 +46,72 @@ const ScoreTable = styled.table`
   tr:not(:last-of-type) td {
     border-bottom: 1px solid #aaa;
   }
+
+  td.expand-btn {
+    padding: 8px 14px;
+    user-select: none;
+    cursor: pointer;
+
+    :hover {
+      background: #e2e2e2;
+    }
+  }
+
+  tr.details {
+    display: none;
+    background: #e5e5ee;
+  }
+
+  tr:has(td.expanded) + tr.details {
+    display: table-row;
+  }
 `;
 
 const Scoreboard = ({ scoreboardData }: Props) => {
+  const onClickExpandHandler = (e: MouseEvent) => {
+    e.currentTarget.classList.toggle('expanded');
+  };
+
   return (
     <StyledScoreBoard>
       <ScoreTable>
         <thead>
           <tr>
             <th>Name</th>
-            <th style={{ textAlign: 'center' }}>Difficulty</th>
-            <th style={{ textAlign: 'end' }}>Score</th>
+            <th colSpan={1} style={{ textAlign: 'end' }}>
+              Score
+            </th>
+            <th style={{ width: '50px' }}></th>
           </tr>
         </thead>
 
         <tbody>
           {scoreboardData
             .sort((a, b) => b.score - a.score)
-            .map((session) => (
-              <tr key={session.id}>
-                <td>{session.name}</td>
-                <td style={{ textAlign: 'center' }}>{session.difficulty}</td>
-                <td style={{ textAlign: 'end' }}>{session.score}</td>
-              </tr>
+            .map(({ id, name, difficulty, score, ...rest }) => (
+              <Fragment key={id}>
+                <tr>
+                  <td>{name}</td>
+                  <td style={{ textAlign: 'end' }}>{score}</td>
+                  <td
+                    className="expand-btn"
+                    onClick={onClickExpandHandler}
+                    aria-label="expand-details-btn"
+                  >
+                    ...
+                  </td>
+                </tr>
+                <tr className="details">
+                  <td colSpan={3}>
+                    <span>
+                      level: {difficulty}
+                      {rest.distance !== undefined &&
+                        ` / ${rest.distance.toFixed(2)}m`}
+                      {rest.time !== undefined && ` / ${formatTime(rest.time)}`}
+                    </span>
+                  </td>
+                </tr>
+              </Fragment>
             ))}
         </tbody>
       </ScoreTable>
