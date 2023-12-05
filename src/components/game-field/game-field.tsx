@@ -46,6 +46,7 @@ const StyledGameField = styled.div`
 
 const StyledGaugesWrapper = styled.div`
   position: absolute;
+  left: 0;
 `;
 
 const GameField = () => {
