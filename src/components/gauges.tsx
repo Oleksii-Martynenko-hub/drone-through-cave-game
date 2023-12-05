@@ -16,7 +16,7 @@ const StyledGauges = styled.div`
   padding: 10px;
   border-radius: 6px;
   opacity: 0.8;
-  margin: 100px -120px 0 0;
+  margin: 100px 0 0 0;
 `;
 
 const Speed = styled.div`
